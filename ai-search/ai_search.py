@@ -108,6 +108,7 @@ def ingest(documents: list, metadata: list) -> None:
     
     vector_search.add_documents(documents, metadata)
 
+#TODO: Add thresholds and output score
 def search(query: str, search_type: str = 'similarity', top_k: int = 5) -> str:
     """
     Search for similar documents in Azure Search.
@@ -127,7 +128,7 @@ def search(query: str, search_type: str = 'similarity', top_k: int = 5) -> str:
 
 if __name__ == "__main__":
     try:
-        docs = search("What is Microsoft's Fabric?", search_type='hybrid', top_k=3)
+        docs = search("What Azure AI Studio ?", search_type='hybrid', top_k=3)
         print(docs)
     except Exception as e:
         logging.error(f"Error during search: {e}")
