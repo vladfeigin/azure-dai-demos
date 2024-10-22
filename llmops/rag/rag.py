@@ -25,7 +25,7 @@ SYSTEM_PROMPT="You are helpful assistant, helping the use nswer questions about 
         Provide the best answer based on the context in concise and clear manner. \
         Find the main points in a question and emphasize them in the answer. "
         
-HUMAN_TEMPLATE=""" context: {context},  question: {question}"""
+HUMAN_TEMPLATE=""" Given context: {context},  question: {question}"""
 
 
 class RAG:
@@ -41,9 +41,12 @@ class RAG:
         self.human_promot_template = HumanMessagePromptTemplate.from_template(HUMAN_TEMPLATE)
         self.chat_prompt_template = ChatPromptTemplate.from_messages([SYSTEM_PROMPT, HUMAN_TEMPLATE])
     
-    def answer(self, question, context, **kwargs):
+    def answer(self, question, chat_history=None, **kwargs):
+        
+        context = search(question)
+        
         prompt = self.chat_prompt_template.format_prompt(context=context, question=question)
-        print (f" final prompt= {prompt}")
+        #print (f" final prompt= {prompt}")
         response = self.aimodel.generate_response(prompt)
         return response.content
         
