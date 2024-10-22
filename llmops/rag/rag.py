@@ -1,3 +1,4 @@
+# python -m rag.rag
 #this module encapsulates the RAG (Retrieval Augmented Generation) implementation
 #it leverages AIModule class and aisearch module to search for the answer
 #create RAG class
