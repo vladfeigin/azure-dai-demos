@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 import os
 load_dotenv()
 
-from aisearch.ai_search import search
+from aisearch.ai_search import AISearch
 from aimodel.ai_model import AIModel
 
 from langchain_core.prompts import HumanMessagePromptTemplate
@@ -30,6 +30,7 @@ HUMAN_TEMPLATE=""" Given context: {context},  question: {question}"""
 
 class RAG:
     def __init__(self) -> None:
+        #init the AIModel class
         self.aimodel = AIModel(
             
             azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
@@ -40,14 +41,18 @@ class RAG:
         self.system_prompt_template = SystemMessagePromptTemplate.from_template(SYSTEM_PROMPT)
         self.human_promot_template = HumanMessagePromptTemplate.from_template(HUMAN_TEMPLATE)
         self.chat_prompt_template = ChatPromptTemplate.from_messages([SYSTEM_PROMPT, HUMAN_TEMPLATE])
-    
+        #init the AISearch class
+        self.aisearch = AISearch()
+     
     def answer(self, question, chat_history=None, **kwargs):
         #call the search function to get the context
-        context = search(question)
+        context = self.aisearch.search(query=question)
         
         prompt = self.chat_prompt_template.format_prompt(context=context, question=question)
         #print (f" final prompt= {prompt}")
         response = self.aimodel.generate_response(prompt)
+        #chain = self.aimodel.llm | prompt
+        #response = chain.invoke()
         return response.content
         
 

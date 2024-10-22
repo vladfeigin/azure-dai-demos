@@ -1,10 +1,12 @@
 import os
 import logging
 from dotenv import load_dotenv
+import atexit
 # Load environment variables from .env file
 load_dotenv()
 
 from langchain_community.vectorstores.azuresearch import AzureSearch
+from langchain_community.retrievers import AzureAISearchRetriever
 from langchain_openai import AzureOpenAIEmbeddings
 from azure.search.documents.indexes.models import (
     ScoringProfile,
@@ -30,18 +32,18 @@ AZURE_OPENAI_EMBEDDING_ENDPOINT = os.getenv("AZURE_OPENAI_EMBEDDING_ENDPOINT")
 AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION")
 
 # Validate environment variables
-required_env_vars = [
+_required_env_vars = [
     "AZURE_SEARCH_SERVICE_ENDPOINT", "AZURE_SEARCH_API_KEY", "AZURE_SEARCH_INDEX_NAME",
     "AZURE_OPENAI_KEY", "AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "AZURE_OPENAI_EMBEDDING_ENDPOINT", "AZURE_OPENAI_API_VERSION"
 ]
 
-for var in required_env_vars:
+for var in _required_env_vars:
     if not os.getenv(var):
         logging.error(f"Environment variable {var} is not set.")
         raise EnvironmentError(f"Environment variable {var} is not set.")
 
 # Initialize AzureOpenAIEmbeddings
-embeddings = AzureOpenAIEmbeddings(
+_embeddings = AzureOpenAIEmbeddings(
     azure_deployment=AZURE_OPENAI_EMBEDDING_DEPLOYMENT,
     openai_api_version=AZURE_OPENAI_API_VERSION,
     azure_endpoint=AZURE_OPENAI_EMBEDDING_ENDPOINT,
@@ -49,7 +51,7 @@ embeddings = AzureOpenAIEmbeddings(
 )
 
 # Define search index custom schema
-fields = [
+_fields = [
     SimpleField(
         name="chunk_id",
         type=SearchFieldDataType.String,
@@ -71,7 +73,7 @@ fields = [
         name="text_vector",
         type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
         searchable=True,
-        vector_search_dimensions=len(embeddings.embed_query("Text")),
+        vector_search_dimensions=len(_embeddings.embed_query("Text")),
         vector_search_profile_name="myHnswProfile",
     ),
     SearchableField(
@@ -81,57 +83,70 @@ fields = [
     ),
 ]
 
-# Create Langchain AzureSearch object
-vector_search = AzureSearch(
-    azure_search_endpoint=AZURE_SEARCH_SERVICE_ENDPOINT,
-    azure_search_key=AZURE_SEARCH_API_KEY,
-    index_name=AZURE_SEARCH_INDEX_NAME,
-    embedding_function=embeddings.embed_query,
-    additional_search_client_options={"retry_total": 3},
-    fields=fields,
-)
-
-def ingest(documents: list, metadata: list) -> None:
-    """
-    Ingest documents into Azure Search.
-
-    :param documents: List of document chunks to ingest.
-    :param metadata: List of metadata corresponding to each document chunk.
-    :raises ValueError: If input is invalid.
-    """
-    if not isinstance(documents, list) or not documents:
-        raise ValueError("Input must be a non-empty list")
-    if not isinstance(metadata, list) or not metadata:
-        raise ValueError("Metadata must be a non-empty list")
-    if len(documents) != len(metadata):
-        raise ValueError("Documents and metadata must be of the same length")
+# AISearch class to perform search operations
+class AISearch:
     
-    vector_search.add_documents(documents, metadata)
+    #init method to initialize the class
+    def __init__(self) -> None:
+        # Create Langchain AzureSearch object
+        self._vector_search = AzureSearch(
+        azure_search_endpoint=AZURE_SEARCH_SERVICE_ENDPOINT,
+        azure_search_key=AZURE_SEARCH_API_KEY,
+        index_name=AZURE_SEARCH_INDEX_NAME,
+        embedding_function=_embeddings.embed_query,
+        additional_search_client_options={"retry_total": 3},
+        fields=_fields,
+        )
+        atexit.register(self.close)
 
-#TODO: Add thresholds and output score
-def search(query: str, search_type: str = 'similarity', top_k: int = 5) -> str:
-    """
-    Search for similar documents in Azure Search.
+    def close(self):
+        """
+        Close the Azure Search client.
+        """
+        print("Closing Azure Search client.")   
+        
+        
+    def ingest(self, documents: list, metadata: list) -> None:
+        """
+        Ingest documents into Azure Search.
 
-    :param query: Search query string.
-    :param search_type: Type of search to perform.
-    :param top_k: Number of top results to return.
-    :return: Content of the top search result.
-    :raises ValueError: If input is invalid.
-    """
-    if not isinstance(query, str) or not query:
-        raise ValueError("Search query must be a non-empty string")
-    
-    docs = vector_search.similarity_search(query=query, k=top_k, search_type=search_type)
-    return docs[0].page_content
+        :param documents: List of document chunks to ingest.
+        :param metadata: List of metadata corresponding to each document chunk.
+        :raises ValueError: If input is invalid.
+        """
+        if not isinstance(documents, list) or not documents:
+            raise ValueError("Input must be a non-empty list")
+        if not isinstance(metadata, list) or not metadata:
+            raise ValueError("Metadata must be a non-empty list")
+        if len(documents) != len(metadata):
+            raise ValueError("Documents and metadata must be of the same length")
+        
+        self._vector_search.add_documents(documents, metadata)
+
+    #TODO: Add thresholds and output score
+    def search(self, query: str, search_type: str = 'similarity', top_k: int = 5) -> str:
+        """
+        Search for similar documents in Azure Search.
+
+        :param query: Search query string.
+        :param search_type: Type of search to perform.
+        :param top_k: Number of top results to return.
+        :return: Content of the top search result.
+        :raises ValueError: If input is invalid.
+        """
+        if not isinstance(query, str) or not query:
+            raise ValueError("Search query must be a non-empty string")
+        
+        docs = self._vector_search.similarity_search (query=query, k=top_k, search_type=search_type)
+        return docs[0].page_content
 
 
 if __name__ == "__main__":
     try:
-        docs = search("What Microsoft Fabric", search_type='hybrid', top_k=3)
+        aisearch = AISearch()
+        docs = aisearch.search("What Microsoft Fabric", search_type='hybrid', top_k=3)
         print(docs)
     except Exception as e:
         logging.error(f"Error during search: {e}")
     finally:
-        if hasattr(vector_search, 'close'):
-            vector_search.close()
+        logging.info("Search completed.")

@@ -28,6 +28,7 @@ class AIModel:
    
     
     def __init__(self, azure_deployment, openai_api_version, azure_endpoint, api_key):
+        
         self.llm = AzureChatOpenAI(  
             azure_deployment=azure_deployment,
             openai_api_version=openai_api_version,
@@ -52,7 +53,7 @@ if __name__ == "__main__":
     api_key=os.getenv("AZURE_OPENAI_KEY")
     
     llm = AIModel(azure_deployment,openai_api_version,azure_endpoint,api_key)
-    response = llm.generate_response(formatted_prompt)
+    
     
   
 
