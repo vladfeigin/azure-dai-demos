@@ -42,7 +42,7 @@ class RAG:
         self.chat_prompt_template = ChatPromptTemplate.from_messages([SYSTEM_PROMPT, HUMAN_TEMPLATE])
     
     def answer(self, question, chat_history=None, **kwargs):
-        
+        #call the search function to get the context
         context = search(question)
         
         prompt = self.chat_prompt_template.format_prompt(context=context, question=question)
