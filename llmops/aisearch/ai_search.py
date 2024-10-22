@@ -21,19 +21,20 @@ from azure.search.documents.indexes.models import (
 #logging.basicConfig(level=logging.INFO)
 
 # Azure Search configuration
-AZURE_SEARCH_SERVICE_ENDPOINT = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")
-AZURE_SEARCH_API_KEY = os.getenv("AZURE_SEARCH_API_KEY")
-AZURE_SEARCH_INDEX_NAME = os.getenv("AZURE_SEARCH_INDEX_NAME")
+AZURE_AI_SEARCH_SERVICE_ENDPOINT = os.getenv("AZURE_AI_SEARCH_SERVICE_ENDPOINT")
+AZURE_AI_SEARCH_API_KEY = os.getenv("AZURE_AI_SEARCH_API_KEY")
+AZURE_AI_SEARCH_INDEX_NAME = os.getenv("AZURE_AI_SEARCH_INDEX_NAME")
+AZURE_AI_SEARCH_SERVICE_NAME = os.getenv("AZURE_AI_SEARCH_SERVICE_NAME")
 
 # Azure OpenAI configuration
 AZURE_OPENAI_KEY = os.getenv("AZURE_OPENAI_KEY")
-AZURE_OPENAI_EMBEDDING_DEPLOYMENT = os.getenv("AZURE_OAZURE_OPENAI_EMBEDDING_DEPLOYMENTPENAI_DEPLOYMENT")
+AZURE_OPENAI_EMBEDDING_DEPLOYMENT = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT")
 AZURE_OPENAI_EMBEDDING_ENDPOINT = os.getenv("AZURE_OPENAI_EMBEDDING_ENDPOINT")
 AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION")
 
 # Validate environment variables
 _required_env_vars = [
-    "AZURE_SEARCH_SERVICE_ENDPOINT", "AZURE_SEARCH_API_KEY", "AZURE_SEARCH_INDEX_NAME",
+    "AZURE_AI_SEARCH_SERVICE_ENDPOINT", "AZURE_AI_SEARCH_API_KEY", "AZURE_AI_SEARCH_INDEX_NAME",
     "AZURE_OPENAI_KEY", "AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "AZURE_OPENAI_EMBEDDING_ENDPOINT", "AZURE_OPENAI_API_VERSION"
 ]
 
@@ -90,21 +91,24 @@ class AISearch:
     def __init__(self) -> None:
         # Create Langchain AzureSearch object
         self._vector_search = AzureSearch(
-        azure_search_endpoint=AZURE_SEARCH_SERVICE_ENDPOINT,
-        azure_search_key=AZURE_SEARCH_API_KEY,
-        index_name=AZURE_SEARCH_INDEX_NAME,
+        azure_search_endpoint=AZURE_AI_SEARCH_SERVICE_ENDPOINT,
+        azure_search_key=AZURE_AI_SEARCH_API_KEY,
+        index_name=AZURE_AI_SEARCH_INDEX_NAME,
         embedding_function=_embeddings.embed_query,
         additional_search_client_options={"retry_total": 3},
         fields=_fields,
         )
-        atexit.register(self.close)
+        self._retriever = AzureAISearchRetriever(content_key="chunk", top_k=3, index_name=AZURE_AI_SEARCH_INDEX_NAME)
+        atexit.register(self.__close__)
 
-    def close(self):
+    def __close__(self)-> None:
         """
         Close the Azure Search client.
         """
         print("Closing Azure Search client.")   
-        
+          
+    def retriever(self) -> AzureAISearchRetriever:
+        return self._retriever
         
     def ingest(self, documents: list, metadata: list) -> None:
         """
@@ -145,7 +149,9 @@ if __name__ == "__main__":
     try:
         aisearch = AISearch()
         docs = aisearch.search("What Microsoft Fabric", search_type='hybrid', top_k=3)
-        print(docs)
+        #print(docs)
+        docs_retr = aisearch.retriever().invoke("What is Microsoft Azure?")
+        print(docs_retr)
     except Exception as e:
         logging.error(f"Error during search: {e}")
     finally:
