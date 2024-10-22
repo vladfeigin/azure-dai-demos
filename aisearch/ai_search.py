@@ -29,14 +29,6 @@ AZURE_OPENAI_EMBEDDING_DEPLOYMENT = os.getenv("AZURE_OAZURE_OPENAI_EMBEDDING_DEP
 AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
 AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION")
 
-#export PYTHONPATH="${PYTHONPATH}:/path/to/parent_directory"
-print ("PYTHONPATH:")
-print ({os.getenv("PYTHONPATH")})
-
-
-
-
-
 # Validate environment variables
 required_env_vars = [
     "AZURE_SEARCH_SERVICE_ENDPOINT", "AZURE_SEARCH_API_KEY", "AZURE_SEARCH_INDEX_NAME",
