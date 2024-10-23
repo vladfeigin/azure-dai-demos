@@ -27,9 +27,9 @@ from langchain_core.prompts import PromptTemplate
 class AIModel:
    
     
-    def __init__(self, azure_deployment, openai_api_version, azure_endpoint, api_key):
+    def __init__(self, azure_deployment, openai_api_version, azure_endpoint, api_key)-> None:
         
-        self.llm = AzureChatOpenAI(  
+        self._llm = AzureChatOpenAI(  
             azure_deployment=azure_deployment,
             openai_api_version=openai_api_version,
             azure_endpoint=azure_endpoint,
@@ -38,6 +38,9 @@ class AIModel:
             
         )
         #self.llm.invoke("What is Microsoft Azure?")
+    
+    def llm(self)-> AzureChatOpenAI:
+        return self._llm
     
     def generate_response(self, prompt):
         response = self.llm.invoke(prompt)
