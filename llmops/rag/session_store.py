@@ -1,8 +1,13 @@
 import uuid
 from abc import ABC, abstractmethod
+# Configure logging
+from logging import INFO, getLogger
+# Logging calls with this logger will be tracked
+logger = getLogger(__name__)
 
 class SessionSroreAbstract(ABC):
     def __init__(self):
+        logger.info("SessionStore.Initializing SessionStore")
         self._sessions = {}
 
     def get_session(self, session_id):

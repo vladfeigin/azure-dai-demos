@@ -18,10 +18,8 @@ from azure.search.documents.indexes.models import (
 
 # Configure logging
 from logging import INFO, getLogger
-
 # Logging calls with this logger will be tracked
 logger = getLogger(__name__)
-logger.setLevel(INFO)
 
 # Azure Search configuration
 AZURE_AI_SEARCH_SERVICE_ENDPOINT = os.getenv("AZURE_AI_SEARCH_SERVICE_ENDPOINT")
@@ -43,7 +41,7 @@ _required_env_vars = [
 
 for var in _required_env_vars:
     if not os.getenv(var):
-        logging.error(f"Environment variable {var} is not set.")
+        logger.error(f"Environment variable {var} is not set.")
         raise EnvironmentError(f"Environment variable {var} is not set.")
 
 # Initialize AzureOpenAIEmbeddings
@@ -92,6 +90,7 @@ class AISearch:
     
     #init method to initialize the class
     def __init__(self) -> None:
+        logger.info("AISearch.Initializing Azure Search client.")
         # Create Langchain AzureSearch object
         self._vector_search = AzureSearch(
         azure_search_endpoint=AZURE_AI_SEARCH_SERVICE_ENDPOINT,
@@ -141,6 +140,7 @@ class AISearch:
         :return: Content of the top search result.
         :raises ValueError: If input is invalid.
         """
+        logger.info(f"Search: Searching for similar documents using query: {query}")
         if not isinstance(query, str) or not query:
             raise ValueError("Search query must be a non-empty string")
         
@@ -156,6 +156,6 @@ if __name__ == "__main__":
         docs_retr = aisearch.retriever().invoke("What is Microsoft Azure?")
         print(docs_retr)
     except Exception as e:
-        logging.error(f"Error during search: {e}")
+        logger.error(f"Error during search: {e}")
     finally:
-        logging.info("Search completed.")
+        logger.info("Search completed.")
