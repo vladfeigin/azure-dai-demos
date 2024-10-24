@@ -6,15 +6,15 @@
 
 #initialize all environment variables from .env file
 import os
-# Configure logging
-import logging
 from dotenv import load_dotenv
 load_dotenv()
 
 from aisearch.ai_search import AISearch
 from aimodel.ai_model import AIModel
-from rag.session_store import SimpleSessionStore
+from session_store import SimpleSessionStore
+from utils.utils import configure_tracing
 
+from promptflow.tracing import trace, start_trace
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
@@ -24,6 +24,10 @@ from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
 
+# Configure logging
+from logging import INFO, getLogger
+# Logging calls with this logger will be tracked
+logger = getLogger(__name__)  
 
 USER_INTENT_SYSTEM_PROMPT=""" Your goal is to retrieve a user intent. Given a chat history and the latest user question,
     which might reference context in the chat history, formulate a standalone question which can be understood without the chat history. 
@@ -44,34 +48,12 @@ SYSTEM_PROMPT="""You are helpful assistant, helping the use nswer questions abou
         
 HUMAN_TEMPLATE="""question: {input}"""
 
-#configure logger
-def configure_logging():
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-    
-    # Console handler
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
-    # Formatter
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    console_handler.setFormatter(formatter)
-    # Add handler to the root logger
-    logger.addHandler(console_handler)
-    
-    # File handler
-    file_handler = logging.FileHandler('app.log')
-    file_handler.setLevel(logging.INFO)
-    file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    file_handler.setFormatter(file_formatter)
-    logger.addHandler(file_handler)
-    
-
 #RAG class encapsulates the RAG (Retrieval Augmented Generation) implementation
 class RAG:
-    configure_logging()
     
     def __init__(self) -> None:
         
+        configure_tracing(__file__)
         #init the AIModel class enveloping the Azure OpenAI LLM model
         self.aimodel = AIModel(
             azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
@@ -121,29 +103,30 @@ class RAG:
         input_messages_key="input",
         history_messages_key="chat_history",
         output_messages_key="answer",
-        )    
-    
+        )  
+          
+    @trace
     def update_chat_history(self, chat_history, question, answer):
         chat_history.extend([
             HumanMessage(content=question),
             AIMessage(content=answer)
         ])
         return chat_history
-    
+    @trace
     def get_session_history(self, session_id:str) -> BaseChatMessageHistory:
         
-        logging.info(f"get_session_history#session_id= {session_id}")
+        logger.info(f"get_session_history#session_id= {session_id}")
         if session_id not in self._session_store.get_all_sessions_id():
             self._session_store.create_session(session_id)
             
         return self._session_store.get_session(session_id)
-            
+    @trace        
     def chat_stateless(self, question, chat_history=None, **kwargs):
         response = self._rag_chain.invoke({"input": question, "chat_history": chat_history})
         return response["answer"]
-    
+    @trace
     def chat(self, session_id, question, **kwargs):  
-        logging.info(f"chat#session_id= {session_id}, question= {question}")      
+        logger.info(f"chat#session_id= {session_id}, question= {question}")      
         response = self._conversational_rag_chain.invoke( {"input": question},
                                                           config={"configurable": {"session_id": session_id}}
                                                         )

@@ -1,0 +1,12 @@
+$schema: https://azuremlschemas.azureedge.net/promptflow/latest/Flow.schema.json
+entry: flow:ChatFlow
+sample:
+  inputs:
+    question: What's Microsoft Fabric?
+  init:
+    model_config:
+      
+      azure_deployment: gpt-4o
+    max_total_token: 4000
+environment:
+  python_requirements_txt: requirements.txt

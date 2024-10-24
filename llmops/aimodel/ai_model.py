@@ -23,15 +23,15 @@ from langchain_core.prompts import PromptTemplate
 #api_key = credential.get_token("https://cognitiveservices.azure.com/.default").token 
 #os.environ["OPENAI_API_KEY"] = api_key
 
+from utils.utils import configure_tracing
 # Configure logging
 from logging import INFO, getLogger
 # Logging calls with this logger will be tracked
 logger = getLogger(__name__)    
 
 class AIModel:
-   
-    
     def __init__(self, azure_deployment, openai_api_version, azure_endpoint, api_key)-> None:
+        configure_tracing(__file__)
         logger.info("AIModel.Initializing AIModel")
         self._llm = AzureChatOpenAI(  
             azure_deployment=azure_deployment,

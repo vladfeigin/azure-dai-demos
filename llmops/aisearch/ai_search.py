@@ -90,6 +90,7 @@ class AISearch:
     
     #init method to initialize the class
     def __init__(self) -> None:
+        
         logger.info("AISearch.Initializing Azure Search client.")
         # Create Langchain AzureSearch object
         self._vector_search = AzureSearch(
