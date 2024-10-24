@@ -12,14 +12,16 @@ load_dotenv()
 from aisearch.ai_search import AISearch
 from aimodel.ai_model import AIModel
 
-from langchain_core.prompts import HumanMessagePromptTemplate
-from langchain_core.prompts import SystemMessagePromptTemplate
+from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
-from langchain.chains import  create_history_aware_retriever
-from langchain.chains import  create_retrieval_chain
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 
-#init Azure open ai env variables
+
+USER_INTENT_SYSTEM_PROMPT=""" Your goal is to retrieve a user intent. Given a chat history and the latest user question,
+    which might reference context in the chat history, formulate a standalone question which can be understood without the chat history. 
+    Do NOT answer the question, just reformulate it if needed and otherwise return it as is."""
 
 SYSTEM_PROMPT="""You are helpful assistant, helping the use nswer questions about Microsoft technologies. \
     You answer questions about Azure, Microsoft 365, Dynamics 365, Power Platform, Azure, Microsoft Fabric and other Microsoft technologies \
@@ -35,50 +37,85 @@ SYSTEM_PROMPT="""You are helpful assistant, helping the use nswer questions abou
         
 HUMAN_TEMPLATE="""question: {input}"""
 
-
+#RAG class encapsulates the RAG (Retrieval Augmented Generation) implementation
 class RAG:
     def __init__(self) -> None:
-        #init the AIModel class
+        
+        #init the AIModel class enveloping the Azure OpenAI LLM model
         self.aimodel = AIModel(
-            
             azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
             openai_api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
             azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
             api_key=os.getenv("AZURE_OPENAI_KEY")
         )
-        self.system_prompt_template = SystemMessagePromptTemplate.from_template(SYSTEM_PROMPT)
-        self.human_promot_template = HumanMessagePromptTemplate.from_template(HUMAN_TEMPLATE)
-        self.chat_prompt_template = ChatPromptTemplate.from_messages([SYSTEM_PROMPT, HUMAN_TEMPLATE])
-        #init the AISearch class
+        
+        #init the AISearch class , enveloping the Azure Search retriever
         self.aisearch = AISearch()
-     
-    def answer_1(self, question, chat_history=None, **kwargs):
-        #call the search function to get the context
-        context = self.aisearch.search(query=question)
         
-        prompt = self.chat_prompt_template.format_prompt(context=context, input=question)
+        #create a prompt template for user intent
+        self._user_intent_prompt_template = ChatPromptTemplate.from_messages(
+            [
+                ("system", USER_INTENT_SYSTEM_PROMPT),
+                MessagesPlaceholder("chat_history"),
+                ("human", "{input}"),
+                
+            ]
+        )
+        #create history aware retriever to build a search query for the user intent
+        self._history_aware_user_intent_retriever = \
+            create_history_aware_retriever(self.aimodel.llm(), 
+                                           self.aisearch.retriever(), 
+                                                self._user_intent_prompt_template
+        )
         
-        #print (f" final prompt= {prompt}")
-        response = self.aimodel.generate_response(prompt)
-        #chain = self.aimodel.llm | prompt
-        #response = chain.invoke()
-        return response.content
+        #prepare final chat chain with history aware retriever 
+        self._chat_prompt_template = ChatPromptTemplate.from_messages(
+            [
+                ("system", SYSTEM_PROMPT),
+                MessagesPlaceholder("chat_history"),
+                ("human", "{input}"),
+            ]
+        )
+        
+        self._question_answer_chain = create_stuff_documents_chain(self.aimodel.llm(), self._chat_prompt_template)
+
+        self._rag_chain = create_retrieval_chain(self._history_aware_user_intent_retriever, self._question_answer_chain)
     
-    def answer_no_history(self, question, chat_history=None, **kwargs):
-        #call the search to get the context
-        combine_docs_chain = create_stuff_documents_chain(self.aimodel.llm(), self.chat_prompt_template)
-        chain = create_retrieval_chain(self.aisearch.retriever(), combine_docs_chain)
-        response = chain.invoke({"input": question, "chat_history": chat_history})
-        return response
+    def update_chat_history(self, chat_history, question, answer):
+        chat_history.extend([
+            HumanMessage(content=question),
+            AIMessage(content=answer)
+        ])
+        return chat_history
+    
+    def chat_stateless(self, question, chat_history=None, **kwargs):
+        response = self._rag_chain.invoke({"input": question, "chat_history": chat_history})
+        return response["answer"]
+    
+    def chat(self, question, **kwargs):
+       pass
+    
         
 
 if __name__ == "__main__":
-    # Initialize the RAG model
-    
+    # Initialize the RAG class and empty history
     rag = RAG()
-    #resp = rag.answer_1(question="What's Microsoft Fabric?", context="")
-    resp = rag.answer_no_history(question="What's Microsoft Fabric?", context="")
-    print (f"***response type = {type(resp)}")
-    print (f"***response= {resp['answer']}")
+    chat_history = []
+    
+    resp = rag.chat_stateless(question="What's Microsoft Fabric Data Factory?", chat_history=chat_history)
+    print (f"***response= {resp}")
+    rag.update_chat_history(chat_history, "What's Microsoft Fabric Data Factory?", resp)
+    
+    resp = rag.chat_stateless(question="List all data sources it supports?", chat_history=chat_history)
+    print (f"***response= {resp}")
+    rag.update_chat_history(chat_history, "List all data sources it supports?", resp)
+    
+    resp = rag.chat_stateless(question="Does it support CosmosDB", chat_history=chat_history)
+    print (f"***response= {resp}")
+    rag.update_chat_history(chat_history, "Does it support CosmosDB?", resp)
+    
+    resp = rag.chat_stateless(question="List all my previous questions", chat_history=chat_history)
+    print (f"***response= {resp}")
+    
 
     
