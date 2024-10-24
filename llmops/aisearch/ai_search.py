@@ -1,7 +1,6 @@
 import os
-import logging
-from dotenv import load_dotenv
 import atexit
+from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
@@ -18,7 +17,11 @@ from azure.search.documents.indexes.models import (
 )
 
 # Configure logging
-#logging.basicConfig(level=logging.INFO)
+from logging import INFO, getLogger
+
+# Logging calls with this logger will be tracked
+logger = getLogger(__name__)
+logger.setLevel(INFO)
 
 # Azure Search configuration
 AZURE_AI_SEARCH_SERVICE_ENDPOINT = os.getenv("AZURE_AI_SEARCH_SERVICE_ENDPOINT")

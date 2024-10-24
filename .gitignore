@@ -7,3 +7,4 @@ llmops/aimodel/__pycache__/__init__.cpython-311.pyc
 llmops/aimodel/__pycache__/ai_model.cpython-311.pyc
 llmops/aisearch/__pycache__/__init__.cpython-311.pyc
 llmops/aisearch/__pycache__/ai_search.cpython-311.pyc
+llmops/rag/__pycache__/session_store.cpython-311.pyc

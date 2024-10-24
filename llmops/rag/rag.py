@@ -5,18 +5,28 @@
 
 
 #initialize all environment variables from .env file
-from dotenv import load_dotenv
 import os
+from dotenv import load_dotenv
 load_dotenv()
 
 from aisearch.ai_search import AISearch
 from aimodel.ai_model import AIModel
+from rag.session_store import SimpleSessionStore
 
 from langchain_core.messages import AIMessage, HumanMessage
-from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
+
+from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.chat_history import BaseChatMessageHistory
+from langchain_core.runnables.history import RunnableWithMessageHistory
+
+# Configure logging
+from logging import INFO, getLogger
+# Logging calls with this logger will be tracked
+logger = getLogger(__name__)
+logger.setLevel(INFO)
 
 
 USER_INTENT_SYSTEM_PROMPT=""" Your goal is to retrieve a user intent. Given a chat history and the latest user question,
@@ -29,6 +39,7 @@ SYSTEM_PROMPT="""You are helpful assistant, helping the use nswer questions abou
         Don't answer not related to Microsoft technologies questions. \
         Provide the best answer based on the context in concise and clear manner. \
         Find the main points in a question and emphasize them in the answer. \
+        If the provided context is not enough to answer the question, ask for more information. \
             
         <context>
         {context}
@@ -51,6 +62,9 @@ class RAG:
         
         #init the AISearch class , enveloping the Azure Search retriever
         self.aisearch = AISearch()
+        
+        #initiate the session store
+        self._session_store = SimpleSessionStore()
         
         #create a prompt template for user intent
         self._user_intent_prompt_template = ChatPromptTemplate.from_messages(
@@ -78,8 +92,16 @@ class RAG:
         )
         
         self._question_answer_chain = create_stuff_documents_chain(self.aimodel.llm(), self._chat_prompt_template)
-
         self._rag_chain = create_retrieval_chain(self._history_aware_user_intent_retriever, self._question_answer_chain)
+        
+        #create a chain with message history automartic handling
+        self._conversational_rag_chain = RunnableWithMessageHistory(
+        self._rag_chain,
+        self.get_session_history,
+        input_messages_key="input",
+        history_messages_key="chat_history",
+        output_messages_key="answer",
+        )
     
     def update_chat_history(self, chat_history, question, answer):
         chat_history.extend([
@@ -88,20 +110,33 @@ class RAG:
         ])
         return chat_history
     
+    def get_session_history(self, session_id:str) -> BaseChatMessageHistory:
+        
+        logger.info(f"get_session_history#session_id= {session_id}")
+        if session_id not in self._session_store.get_all_sessions_id():
+            self._session_store.create_session(session_id)
+            
+        return self._session_store.get_session(session_id)
+            
     def chat_stateless(self, question, chat_history=None, **kwargs):
         response = self._rag_chain.invoke({"input": question, "chat_history": chat_history})
         return response["answer"]
     
-    def chat(self, question, **kwargs):
-       pass
+    def chat(self, session_id, question, **kwargs):        
+        response = self._conversational_rag_chain.invoke( {"input": question},
+                                                          config={"configurable": {"session_id": session_id}}
+                                                        )
+        return response["answer"]
     
         
 
 if __name__ == "__main__":
     # Initialize the RAG class and empty history
-    rag = RAG()
-    chat_history = []
     
+    rag = RAG()
+    
+    """
+    chat_history = []
     resp = rag.chat_stateless(question="What's Microsoft Fabric Data Factory?", chat_history=chat_history)
     print (f"***response= {resp}")
     rag.update_chat_history(chat_history, "What's Microsoft Fabric Data Factory?", resp)
@@ -117,5 +152,23 @@ if __name__ == "__main__":
     resp = rag.chat_stateless(question="List all my previous questions", chat_history=chat_history)
     print (f"***response= {resp}")
     
+    """
+    import uuid
+    session_id = str(uuid.uuid4())
+    
+    resp = rag.chat(session_id, question="What's Microsoft Fabric Data Factory?")
+    print (f"***response1 = {resp}")
+    
+    resp = rag.chat(session_id, question="List all data sources it supports?")
+    print (f"***response2 = {resp}")
+    
+    resp = rag.chat(session_id, question="Does it support CosmosDB?")
+    print (f"***response3 = {resp}")
+    
+    resp = rag.chat(session_id, question="List all my previous questions.")
+    print (f"***response4 = {resp}")
 
+    new_session_id = str(uuid.uuid4())
+    resp = rag.chat(new_session_id, question="List all my previous questions.")
+    print (f"***response5 = {resp}")
     
