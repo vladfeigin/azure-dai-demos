@@ -2,8 +2,20 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 import logging
+
+from azure.identity import DefaultAzureCredential, InteractiveBrowserCredential
 from promptflow.tracing import trace, start_trace
 from azure.monitor.opentelemetry import configure_azure_monitor
+
+def get_credential():
+    try:
+        credential = DefaultAzureCredential()
+        # Check if given credential can get token successfully.
+        credential.get_token("https://management.azure.com/.default")
+    except Exception as ex:
+        # Fall back to InteractiveBrowserCredential in case DefaultAzureCredential does not work
+        credential = InteractiveBrowserCredential()
+    return credential
 
 def configure_tracing(collection_name: str = "llmops")-> None:
     os.environ["APPLICATIONINSIGHTS_CONNECTION_STRING"] = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")

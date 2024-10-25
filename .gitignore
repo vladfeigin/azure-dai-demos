@@ -14,3 +14,9 @@ llmops/flow/__pycache__/__init__.cpython-311.pyc
 llmops/flow/__pycache__/flow.cpython-311.pyc
 llmops/utils/__pycache__/__init__.cpython-311.pyc
 llmops/utils/__pycache__/utils.cpython-311.pyc
+llmops/flow/config.json
+llmops/__pycache__/runflow_client.cpython-311.pyc
+llmops/__pycache__/runflow.cpython-311.pyc
+llmops/rag/__pycache__/rag_main.cpython-311.pyc
+llmops/rag/__pycache__/runflow_client.cpython-311.pyc
+llmops/config.json
