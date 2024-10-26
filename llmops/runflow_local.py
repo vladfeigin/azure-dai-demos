@@ -1,15 +1,15 @@
 #import sys
 #print("sys.path:", sys.path)
 import os
-from azure.identity import DefaultAzureCredential, InteractiveBrowserCredential
-from promptflow.core import  AzureOpenAIModelConfiguration
 from promptflow.client import PFClient
 from rag.rag_main import RAG
-from utils.utils import configure_logging  # Assuming you have this function
+from evalflow import eval_all
+from utils.utils import configure_logging, configure_tracing, configure_env
 import pandas as pd
 
-# Configure logging
+# Configure logging and tracing
 logger = configure_logging()
+configure_tracing()
 
 flow = "."  # Path to the flow directory
 data = "./rag/data.jsonl"  # Path to the data file for batch evaluation
@@ -20,25 +20,8 @@ def rag_flow(session_id: str, question: str = " ") -> str:
     return rag(session_id, question)
 
 #run the flow
-def runflow():
-    # Retrieve environment variables with default values or handle missing cases
-    azure_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
-    azure_deployment = os.environ.get("AZURE_OPENAI_DEPLOYMENT")
-    api_version = os.environ.get("AZURE_OPENAI_API_VERSION")
-    api_key = os.environ.get("AZURE_OPENAI_KEY")
-
-    if not all([azure_endpoint, azure_deployment, api_version, api_key]):
-        logger.error("One or more Azure OpenAI environment variables are missing.")
-        return
-
-    model_config = AzureOpenAIModelConfiguration(
-        azure_endpoint=azure_endpoint,
-        azure_deployment=azure_deployment,
-        api_version=api_version,
-        api_key=api_key
-    )
-    logger.info(f"Model configuration: {model_config}")
-
+def runflow(dump_output: bool = False):
+    logger.info("Running the flow for batch.") 
     pf = PFClient()
     try:
         base_run = pf.run(
@@ -47,8 +30,10 @@ def runflow():
             column_mapping={
                 "session_id": "${data.session_id}",
                 "question": "${data.question}",
+                "answer": "${data.answer}", # This ground truth answer is not used in the flow  
+                "context": "${data.context}", # This context ground truth is not used in the flow
             },
-            model_config=model_config,
+            model_config=configure_env(),
             stream=True,  # To see the running progress of the flow in the console
         )
     except Exception as e:
@@ -56,17 +41,24 @@ def runflow():
         return
 
     # Get run details
-    logger.info("---------------------Getting run details----------------")
     details = pf.get_details(base_run)
-
-    # Print to console
-    print(details.head(10))
+    # if dump_to_output True, save the details to the local file called: batch_flow_output_<timestamp>.txt
+    #file name must contain a current timestamp
+    if dump_output:
+        #timestamp = pd.Timestamp.now().strftime("%Y%m%d%H%M%S")
+        details.to_csv(f"batch_flow_output.txt", index=False)
 
     # Log the DataFrame
     logger.info("Run Details:\n%s", details.head(10).to_string())
+    return details
+
+#the function which runs the batch flow and then evaluates the output
+def run_and_eval_flow(dump_output: bool = False):
+    # Load the batch output from runflow
+    batch_output = runflow(dump_output=True)
+    eval_output = eval_all(batch_output, dump_output=True)
+    logger.info(eval_output)
 
 if __name__ == "__main__":
-    runflow()
-    logger.info("Done")
-
+   run_and_eval_flow(dump_output=True)
     

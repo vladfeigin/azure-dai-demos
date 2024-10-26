@@ -16,8 +16,10 @@ environment_variables:
 
 sample:
   inputs:
-    session_id: 1234 
-    question: What's Microsoft Fabric?
+    session_id: "1234" 
+    question: "What's Microsoft Fabric?"
+    answer: "Microsoft Fabric is an end-to-end analytics and data platform designed for enterprises"
+    context: ""
 
 entry: rag.rag_main:RAG
 

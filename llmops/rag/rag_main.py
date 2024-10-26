@@ -49,7 +49,7 @@ SYSTEM_PROMPT="""You are helpful assistant, helping the use nswer questions abou
         
 HUMAN_TEMPLATE="""question: {input}"""
 #for pf tracing see details here: https://learn.microsoft.com/en-us/azure/ai-studio/how-to/develop/trace-local-sdk?tabs=python 
-start_trace(collection_name=TRACING_COLLECTION_NAME)
+#start_trace(collection_name=TRACING_COLLECTION_NAME)
 #local traces see in: http://127.0.0.1:23337/v1.0/ui/traces/
 
 #RAG class encapsulates the RAG (Retrieval Augmented Generation) implementation
@@ -118,7 +118,7 @@ class RAG:
         question: str = " "
     ) -> str:
         """>>>RAG Flow entry function."""
-        self.logger.info("RAG.__call__")
+        self.logger.info("RAG.__call__start_chat")
         response = self.chat(session_id, question)
         self.logger.info(f"RAG.__call__#response= {response}")
         return response

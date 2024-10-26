@@ -7,6 +7,28 @@ from azure.identity import DefaultAzureCredential, InteractiveBrowserCredential
 from promptflow.tracing import trace, start_trace
 from azure.monitor.opentelemetry import configure_azure_monitor
 
+@trace
+def configure_env():
+    # Retrieve environment variables with default values or handle missing cases
+    azure_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
+    azure_deployment = os.environ.get("AZURE_OPENAI_DEPLOYMENT")
+    api_version = os.environ.get("AZURE_OPENAI_API_VERSION")
+    api_key = os.environ.get("AZURE_OPENAI_KEY")
+
+    if not all([azure_endpoint, azure_deployment, api_version, api_key]):
+        logging.error("One or more Azure OpenAI environment variables are missing.")
+        raise Exception("One or more environment variables are missing.")
+
+    model_config = {
+    "azure_endpoint": azure_endpoint,
+    "api_key": api_key,
+    "azure_deployment": azure_deployment,
+    "api_version": api_version,
+    }   
+    return model_config 
+
+
+@trace
 def get_credential():
     try:
         credential = DefaultAzureCredential()
@@ -17,11 +39,15 @@ def get_credential():
         credential = InteractiveBrowserCredential()
     return credential
 
+#for pf tracing see details here: https://learn.microsoft.com/en-us/azure/ai-studio/how-to/develop/trace-local-sdk?tabs=python 
+#local traces see in: http://127.0.0.1:23337/v1.0/ui/traces/
+@trace
 def configure_tracing(collection_name: str = "llmops")-> None:
     os.environ["APPLICATIONINSIGHTS_CONNECTION_STRING"] = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
     configure_azure_monitor(collection_name=collection_name)
     start_trace()
     
+@trace    
 def configure_logging():
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
@@ -30,8 +56,8 @@ def configure_logging():
     logging.getLogger('azure.core.pipeline').setLevel(logging.WARNING)
     logging.getLogger('azure.core.pipeline.policies').setLevel(logging.WARNING)
     logging.getLogger('azure.core.pipeline.policies.http_logging_policy').setLevel(logging.WARNING)
-    
-    
+    logging.getLogger('opentelemetry.attributes').setLevel(logging.ERROR)
+
     # Console handler
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
@@ -49,6 +75,7 @@ def configure_logging():
     logger.addHandler(file_handler)
     return logger
     
+
     
 
 

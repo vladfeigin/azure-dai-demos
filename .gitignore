@@ -21,3 +21,7 @@ llmops/rag/__pycache__/rag_main.cpython-311.pyc
 llmops/rag/__pycache__/runflow_client.cpython-311.pyc
 llmops/config.json
 llmops/__pycache__/runflow_local.cpython-311.pyc
+llmops/__pycache__/evalflow.cpython-311.pyc
+llmops/batch_output_20241026181329.txt
+llmops/batch_eval_output_20241026181329.txt
+llmops/batch_flow_output.txt
