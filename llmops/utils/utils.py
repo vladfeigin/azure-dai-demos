@@ -25,6 +25,12 @@ def configure_tracing(collection_name: str = "llmops")-> None:
 def configure_logging():
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
+    logging.getLogger('azure').setLevel(logging.WARNING)
+    logging.getLogger('azure.core').setLevel(logging.WARNING)
+    logging.getLogger('azure.core.pipeline').setLevel(logging.WARNING)
+    logging.getLogger('azure.core.pipeline.policies').setLevel(logging.WARNING)
+    logging.getLogger('azure.core.pipeline.policies.http_logging_policy').setLevel(logging.WARNING)
+    
     
     # Console handler
     console_handler = logging.StreamHandler()

@@ -1,0 +1,39 @@
+{
+    "function": "__call__",
+    "$schema": "https://azuremlschemas.azureedge.net/promptflow/latest/flow.schema.json",
+    "description": "A flow that runs the RAG application with all necessary modules.",
+    "language": "python",
+    "additional_includes": [
+        "./aisearch/",
+        "./aimodel/",
+        "./utils/",
+        "./rag/",
+        "./"
+    ],
+    "environment_variables": {
+        "AZURE_OPENAI_API_KEY": "${openai-australia-east-303474.api_key}",
+        "AZURE_OPENAI_ENDPOINT": "${openai-australia-east-303474.api_base}"
+    },
+    "sample": {
+        "inputs": {
+            "session_id": 1234,
+            "question": "What's Microsoft Fabric?"
+        }
+    },
+    "entry": "rag.rag_main:RAG",
+    "environment": {
+        "docker_image": "python:3.11-slim",
+        "python_requirements_txt": "./requirements.txt"
+    },
+    "type": "chat",
+    "name": "llmops",
+    "inputs": {
+        "session_id": {
+            "type": "string"
+        },
+        "question": {
+            "type": "string",
+            "default": " "
+        }
+    }
+}

@@ -119,7 +119,7 @@ class RAG:
         """>>>RAG Flow entry function."""
         self.logger.info("RAG.__call__")
         response = self.chat(session_id, question)
-        #self.logger.info(f"RAG.__call__#response= {response}")
+        self.logger.info(f"RAG.__call__#response= {response}")
         return response
     
     @trace
@@ -132,7 +132,7 @@ class RAG:
     @trace
     def get_session_history(self, session_id:str) -> BaseChatMessageHistory:
         
-        self.logger.info(f"get_session_history#session_id= {session_id}")
+        #self.logger.info(f"get_session_history#session_id= {session_id}")
         if session_id not in self._session_store.get_all_sessions_id():
             self._session_store.create_session(session_id)
             
@@ -141,12 +141,20 @@ class RAG:
     def chat_stateless(self, question, chat_history=None, **kwargs):
         response = self._rag_chain.invoke({"input": question, "chat_history": chat_history})
         return response["answer"]
+    
     @trace
     def chat(self, session_id, question, **kwargs):  
-        self.logger.info(f"chat#session_id= {session_id}, question= {question}")      
-        response = self._conversational_rag_chain.invoke( {"input": question},
+        self.logger.info(f"chat#session_id= {session_id}, question= {question}")
+        
+        try:
+            response = self._conversational_rag_chain.invoke( {"input": question},
                                                           config={"configurable": {"session_id": session_id}}
                                                         )
+            self.logger.info(f"chat#response= {response}")
+            return response["answer"]
+        except Exception as e:
+            self.logger.error(f"chat#exception= {e}")
+            
         return response["answer"]
     
 if __name__ == "__main__":
