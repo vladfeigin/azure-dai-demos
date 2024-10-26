@@ -24,9 +24,7 @@ from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
 
 from promptflow.tracing import trace, start_trace
-from promptflow.core import  AzureOpenAIModelConfiguration
-from promptflow.azure import PFClient
-
+TRACING_COLLECTION_NAME = "rag"
 # Configure logging
 #from logging import INFO, getLogger
 # Logging calls with this logger will be tracked
@@ -50,6 +48,9 @@ SYSTEM_PROMPT="""You are helpful assistant, helping the use nswer questions abou
         """
         
 HUMAN_TEMPLATE="""question: {input}"""
+#for pf tracing see details here: https://learn.microsoft.com/en-us/azure/ai-studio/how-to/develop/trace-local-sdk?tabs=python 
+start_trace(collection_name=TRACING_COLLECTION_NAME)
+#local traces see in: http://127.0.0.1:23337/v1.0/ui/traces/
 
 #RAG class encapsulates the RAG (Retrieval Augmented Generation) implementation
 class RAG:
