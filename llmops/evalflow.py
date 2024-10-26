@@ -1,4 +1,32 @@
 
+#TODO - currently the code uses default prompty files for each evaluator,e.g azure/ai/evaluation/_evaluators/_relevance/relevance.prompty
+# if you need to use custom prompty files, you can create them, create custom evalutor class whihc inherits from corresponding evaluator class 
+# and override the PROMPTY_FILE attribute with the path to the custom prompty file
+#for example: 
+
+"""
+#pip install typing_extensions
+ class CustomGroundednessEvaluator(GroundednessEvaluator):
+
+    PROMPTY_FILE = "custom_groundedness.prompty"  # Name of your custom prompty file
+    @override
+    def __init__(self, model_config: dict):
+        # Determine the path to the custom prompty file
+        current_dir = os.path.dirname(__file__)
+        custom_prompty_path = os.path.join(current_dir, self.PROMPTY_FILE)
+        
+        # Check if the custom prompty file exists
+        if not os.path.exists(custom_prompty_path):
+            raise FileNotFoundError(f"Custom prompty file not found at: {custom_prompty_path}")
+        
+        # Initialize the base class with the custom prompty file
+        super().__init__(model_config=model_config)
+        
+        # log the prompty file path
+        logger = logging.getLogger(__name__)
+        logger.info(f"Using custom prompty file for GroundednessEvaluator: {custom_prompty_path}")
+        """
+
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -30,6 +58,20 @@ evaluators = {
         "similarity": SimilarityEvaluator(model_config),
         "coherence": CoherenceEvaluator(model_config),
 }
+
+# Function to verify prompty file paths
+def verify_prompty_files(evaluators: dict):
+    for name, evaluator in evaluators.items():
+        # Access the _prompty_file attribute
+        prompty_file = getattr(evaluator, '_prompty_file', None)
+        if prompty_file:
+            if os.path.exists(prompty_file):
+                logger.info(f"Evaluator '{name}' is using existing prompty file: {prompty_file}")
+            else:
+                logger.error(f"Evaluator '{name}' is using missing prompty file: {prompty_file}")
+        else:
+            logger.warning(f"Evaluator '{name}' does not have a '_prompty_file' attribute.")
+
     
 def relevancy(batch_output: pd.DataFrame):
     
@@ -121,6 +163,10 @@ def coherence(batch_output: pd.DataFrame):
 # add function eva_all which calls all 4 evaluation functions and returns the average score for each
 def eval_all(batch_output: pd.DataFrame, dump_output: bool = False):
     
+    # Verify prompty files after initializing evaluators
+    logger.info("Verifying prompty files availability for evaluators.")
+    verify_prompty_files(evaluators)
+
     avg_relevance_score = relevancy(batch_output)
     avg_groundedness_score = groundedness(batch_output)
     avg_similarity_score = similarity(batch_output) 
@@ -145,6 +191,7 @@ from runflow_local import runflow
 if __name__ == "__main__":
     # Load the batch output from runflow
     batch_output = runflow(dump_output=True)
+
     eval_output = eval_all(batch_output, dump_output=True)
     logger.info(eval_output)
     

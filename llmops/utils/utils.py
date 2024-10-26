@@ -27,7 +27,6 @@ def configure_env():
     }   
     return model_config 
 
-
 @trace
 def get_credential():
     try:
