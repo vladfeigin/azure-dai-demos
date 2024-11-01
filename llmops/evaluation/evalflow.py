@@ -1,7 +1,6 @@
 import os
 import pandas as pd
 from dotenv import load_dotenv
-#from runflow_local import runflow
 from utils.utils import configure_logging, configure_tracing, configure_env
 from azure.ai.evaluation import (
     RelevanceEvaluator,

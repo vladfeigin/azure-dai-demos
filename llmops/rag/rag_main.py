@@ -151,7 +151,7 @@ class RAG:
             response = self._conversational_rag_chain.invoke( {"input": question},
                                                           config={"configurable": {"session_id": session_id}}
                                                         )
-            self.logger.info(f"chat#response= {response}")
+            #self.logger.info(f"chat#response= {response}")
             return response["answer"]
         except Exception as e:
             self.logger.error(f"chat#exception= {e}")

@@ -50,6 +50,28 @@ def configure_tracing(collection_name: str = "llmops")-> None:
 def configure_logging():
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
+
+    #to avoid duplicate logging, check the logger has no handlers
+    if not logger.handlers:
+        logger.info("Configuring logging. Handlres is being added.")
+        # Console handler
+        
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+        # Formatter
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        console_handler.setFormatter(formatter)
+        # Add handler to the root logger
+        logger.addHandler(console_handler)
+        
+        # File handler
+        
+        file_handler = logging.FileHandler('app.log')
+        file_handler.setLevel(logging.INFO)
+        file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        file_handler.setFormatter(file_formatter)
+        logger.addHandler(file_handler)
+        
     logging.getLogger('azure').setLevel(logging.WARNING)
     logging.getLogger('azure.core').setLevel(logging.WARNING)
     logging.getLogger('azure.core.pipeline').setLevel(logging.WARNING)
@@ -59,22 +81,7 @@ def configure_logging():
     logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(logging.ERROR)
     logging.getLogger('oopentelemetry.trace').setLevel(logging.ERROR)
     logging.getLogger('oopentelemetry.metrics').setLevel(logging.ERROR)
-
-    # Console handler
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
-    # Formatter
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    console_handler.setFormatter(formatter)
-    # Add handler to the root logger
-    logger.addHandler(console_handler)
-    
-    # File handler
-    file_handler = logging.FileHandler('app.log')
-    file_handler.setLevel(logging.INFO)
-    file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    file_handler.setFormatter(file_formatter)
-    logger.addHandler(file_handler)
+        
     return logger
     
 

@@ -3,7 +3,7 @@
 import os
 from promptflow.client import PFClient
 from rag.rag_main import RAG
-from evalflow import eval_batch
+from evaluation.evalflow import eval_batch
 from utils.utils import configure_logging, configure_tracing, configure_env
 import pandas as pd
 
@@ -48,8 +48,6 @@ def runflow(dump_output: bool = False):
         #timestamp = pd.Timestamp.now().strftime("%Y%m%d%H%M%S")
         details.to_csv(f"batch_flow_output.txt", index=False)
 
-    # Log the DataFrame
-    logger.info("Run Details:\n%s", details.head(10).to_string())
     return details
 
 #the function which runs the batch flow and then evaluates the output
