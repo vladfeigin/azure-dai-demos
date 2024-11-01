@@ -1,4 +1,4 @@
-ai-llmops-project==0.1.0
+-e git+ssh://git@github.com/vladfeigin/azure-dai-demos.git@d2b8d140d4952098d78f0314fe76a83e3def7881#egg=ai_llmops_project&subdirectory=llmops
 aiohappyeyeballs==2.4.0
 aiohttp==3.10.5
 aiosignal==1.3.1
@@ -11,6 +11,7 @@ asgiref==3.8.1
 asttokens==2.4.1
 attrs==24.2.0
 azure-ai-documentintelligence==1.0.0b4
+azure-ai-evaluation==1.0.0b4
 azure-ai-ml==1.21.1
 azure-common==1.1.28
 azure-core==1.31.0
@@ -67,6 +68,7 @@ jaraco.classes==3.4.0
 jedi==0.19.1
 Jinja2==3.1.4
 jiter==0.5.0
+joblib==1.4.2
 jsonpatch==1.33
 jsonpointer==3.0.0
 jsonschema==4.23.0
@@ -91,6 +93,7 @@ msrest==0.7.1
 multidict==6.0.5
 mypy-extensions==1.0.0
 nest-asyncio==1.6.0
+nltk==3.9.1
 numpy==1.26.4
 oauthlib==3.2.2
 openai==1.52.2

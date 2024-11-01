@@ -56,9 +56,14 @@ def runflow(dump_output: bool = False):
 def run_and_eval_flow(dump_output: bool = False):
     # Load the batch output from runflow
     batch_output = runflow(dump_output=True)
-    eval_output = eval_all(batch_output, dump_output=True)
-    logger.info(eval_output)
+    eval_res, eval_metrics = eval_all(batch_output, dump_output=True)
+    logger.info(eval_res)
+    logger.info(eval_metrics)
 
 if __name__ == "__main__":
-   run_and_eval_flow(dump_output=True)
+    
+    # variant
+    variant = ""
+    
+    run_and_eval_flow(dump_output=True)
     

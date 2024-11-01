@@ -9,9 +9,9 @@ additional_includes:
   - ./rag/
   - ./
 
-environment_variables:
-  AZURE_OPENAI_API_KEY: "${openai-australia-east-303474.api_key}"
-  AZURE_OPENAI_ENDPOINT: "${openai-australia-east-303474.api_base}"
+#environment_variables:
+  #AZURE_OPENAI_API_KEY: "${openai-australia-east-303474.api_key}"
+  #AZURE_OPENAI_ENDPOINT: "${openai-australia-east-303474.api_base}"
   # Include other environment variables as needed
 
 sample:
@@ -27,8 +27,4 @@ environment:
   docker_image: "python:3.11-slim"
   python_requirements_txt: ./requirements.txt
  
- 
- 
-
-
 type: chat
