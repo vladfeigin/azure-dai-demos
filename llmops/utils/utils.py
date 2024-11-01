@@ -56,6 +56,9 @@ def configure_logging():
     logging.getLogger('azure.core.pipeline.policies').setLevel(logging.WARNING)
     logging.getLogger('azure.core.pipeline.policies.http_logging_policy').setLevel(logging.WARNING)
     logging.getLogger('opentelemetry.attributes').setLevel(logging.ERROR)
+    logging.getLogger('opentelemetry.instrumentation.instrumentor').setLevel(logging.ERROR)
+    logging.getLogger('oopentelemetry.trace').setLevel(logging.ERROR)
+    logging.getLogger('oopentelemetry.metrics').setLevel(logging.ERROR)
 
     # Console handler
     console_handler = logging.StreamHandler()

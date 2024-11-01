@@ -3,13 +3,13 @@
 import os
 from promptflow.client import PFClient
 from rag.rag_main import RAG
-from evalflow import eval_all
+from evalflow import eval_batch
 from utils.utils import configure_logging, configure_tracing, configure_env
 import pandas as pd
 
 # Configure logging and tracing
 logger = configure_logging()
-configure_tracing()
+configure_tracing(__file__)
 
 flow = "."  # Path to the flow directory
 data = "./rag/data.jsonl"  # Path to the data file for batch evaluation
@@ -55,15 +55,15 @@ def runflow(dump_output: bool = False):
 #the function which runs the batch flow and then evaluates the output
 def run_and_eval_flow(dump_output: bool = False):
     # Load the batch output from runflow
-    batch_output = runflow(dump_output=True)
-    eval_res, eval_metrics = eval_all(batch_output, dump_output=True)
-    logger.info(eval_res)
-    logger.info(eval_metrics)
+    batch_output = runflow(dump_output=dump_output)
+    eval_res, eval_metrics = eval_batch(batch_output, dump_output=dump_output)
+    logger.info(f"Batch evaluation results: {eval_res.to_dict(orient='records')}")
+    logger.info( f"Batch evaluation metrics:{eval_metrics.to_dict(orient='records')}")
 
 if __name__ == "__main__":
     
     # variant
     variant = ""
     
-    run_and_eval_flow(dump_output=True)
+    run_and_eval_flow(dump_output=False)
     
