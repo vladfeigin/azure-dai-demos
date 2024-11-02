@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 from dotenv import load_dotenv
-from utils.utils import configure_logging, configure_tracing, configure_env
+from utils.utils import configure_logging, configure_tracing, configure_aoai_env
 from azure.ai.evaluation import (
     RelevanceEvaluator,
     GroundednessEvaluator,
@@ -18,7 +18,7 @@ logger = configure_logging()
 #configure_tracing()
 
 # Get LLM configuration
-model_config = configure_env()
+model_config = configure_aoai_env()
 
 # Initialize dictionary with evaluators
 evaluators = {

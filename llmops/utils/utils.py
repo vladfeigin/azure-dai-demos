@@ -7,8 +7,20 @@ from azure.identity import DefaultAzureCredential, InteractiveBrowserCredential
 from promptflow.tracing import trace, start_trace
 from azure.monitor.opentelemetry import configure_azure_monitor
 
-@trace
-def configure_env():
+def configure_aoai_env():
+    #check if all the required environment variables are set than skip the rest of the code:
+    
+    if all([os.environ.get("AZURE_OPENAI_ENDPOINT"), 
+            os.environ.get("AZURE_OPENAI_DEPLOYMENT"),
+            os.environ.get("AZURE_OPENAI_API_VERSION"), 
+            os.environ.get("AZURE_OPENAI_KEY")]):
+        return {
+            "azure_endpoint": os.environ.get("AZURE_OPENAI_ENDPOINT"),
+            "api_key": os.environ.get("AZURE_OPENAI_KEY"),
+            "azure_deployment": os.environ.get("AZURE_OPENAI_DEPLOYMENT"),
+            "api_version": os.environ.get("AZURE_OPENAI_API_VERSION"),
+        }
+    
     # Retrieve environment variables with default values or handle missing cases
     azure_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
     azure_deployment = os.environ.get("AZURE_OPENAI_DEPLOYMENT")
@@ -27,6 +39,99 @@ def configure_env():
     }   
     return model_config 
 
+
+#create a function for configuring emnedding model environment it should load env variables from .env file
+def configure_embedding_env():
+    if all([os.environ.get("AZURE_OPENAI_EMBEDDING_ENDPOINT"), 
+            os.environ.get("AZURE_OPENAI_KEY"),
+            os.environ.get("AZURE_OPENAI_EMBEDDING_DEPLOYMENT"),
+            ]):
+        return {
+            "embedding_model_endpoint": os.environ.get("AZURE_OPENAI_EMBEDDING_ENDPOINT"),
+            "embedding_model_api_key": os.environ.get("AZURE_OPENAI_KEY"),
+            "embedding_model_name": os.environ.get("AZURE_OPENAI_EMBEDDING_DEPLOYMENT"),
+        }
+    
+    # Retrieve environment variables with default values or handle missing cases
+    embedding_model_endpoint = os.environ.get("AZURE_OPENAI_EMBEDDING_ENDPOINT")
+    embedding_model_api_key = os.environ.get("AZURE_OPENAI_KEY")
+    embedding_model_name = os.environ.get("AZURE_OPENAI_EMBEDDING_DEPLOYMENT")
+
+    if not all([embedding_model_endpoint, embedding_model_api_key, embedding_model_name]):
+        logging.error("One or more Embedding Model environment variables are missing.")
+        raise Exception("One or more environment variables are missing.")
+
+    embedding_model_config = {
+    "embedding_model_endpoint": embedding_model_endpoint,
+    "embedding_model_api_key": embedding_model_api_key,
+    "embedding_model_name": embedding_model_name,
+    }   
+    return embedding_model_config
+
+
+#create function for configuring azur ai search environment it should load env variables from .env file
+# beore check if all the required environment variables are set than skip the rest of the code:
+# if not set the environment variables and return the dictionary with the environment
+# variables
+def configure_aisearch_env():
+    if all([os.environ.get("AZURE_AI_SEARCH_SERVICE_ENDPOINT"), 
+            os.environ.get("AZURE_SEARCH_KEY"),
+            os.environ.get("AZURE_SEARCH_INDEX_NAME"),
+            os.environ.get("AZURE_AI_SEARCH_SERVICE_NAME"),
+            ]):
+        return {
+            "azure_search_endpoint": os.environ.get("AZURE_AI_SEARCH_SERVICE_ENDPOINT"),
+            "azure_search_api_key": os.environ.get("AZURE_AI_SEARCH_API_KEY"),
+            "azure_search_index_name": os.environ.get("AZURE_SEARCH_INDEX_NAME"),
+            "azure_search_service_name": os.environ.get("AZURE_AI_SEARCH_SERVICE_NAME"),
+        }
+    
+    # Retrieve environment variables with default values or handle missing cases
+    azure_search_endpoint = os.environ.get("AZURE_SEARCH_ENDPOINT")
+    azure_search_api_key = os.environ.get("AZURE_SEARCH_KEY")
+    azure_search_index_name = os.environ.get("AZURE_SEARCH_INDEX_NAME")
+    azure_search_service_name = os.environ.get("AZURE_SEARCH_SERVICE_NAME")
+
+    if not all([azure_search_endpoint, azure_search_api_key, azure_search_index_name, azure_search_service_name]):
+        logging.error("One or more Azure Search environment variables are missing.")
+        raise Exception("One or more environment variables are missing.")
+
+    search_config = {
+    "azure_search_endpoint": azure_search_endpoint,
+    "azure_search_api_key": azure_search_api_key,
+    "azure_search_index_name": azure_search_index_name,
+    "azure_search_service_name": azure_search_service_name,
+    }   
+    return search_config
+
+# create a function for configuring azure document intelligence environment it should load env variables from .env file
+def configure_docintell_env():
+    if all([os.environ.get("AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT"), 
+            os.environ.get("AZURE_DOCUMENT_INTELLIGENCE_KEY"),
+            ]):
+        return {
+            "doc_intelligence_endpoint": os.environ.get("AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT"),
+            "doc_intelligence_key": os.environ.get("AZURE_DOCUMENT_INTELLIGENCE_KEY"),
+            "doc_intellugence_api_version": os.environ.get("AZURE_DOCUMENT_INTELLIGENCE_API_VERSION"),
+        }
+    
+    # Retrieve environment variables with default values or handle missing cases
+    doc_intelligence_endpoint = os.environ.get("AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT")
+    doc_intelligence_key = os.environ.get("AZURE_DOCUMENT_INTELLIGENCE_KEY")
+    doc_intellugence_api_version = os.environ.get("AZURE_DOCUMENT_INTELLIGENCE_API_VERSION")
+
+    if not all([doc_intelligence_endpoint, doc_intelligence_key, doc_intellugence_api_version]):
+        logging.error("One or more Document Intelligence environment variables are missing.")
+        raise Exception("One or more environment variables are missing.")
+
+    doc_intelligence_config = {
+    "doc_intelligence_endpoint": doc_intelligence_endpoint,
+    "doc_intelligence_key": doc_intelligence_key,
+    "doc_intellugence_api_version": doc_intellugence_api_version,
+    }
+       
+    return doc_intelligence_config
+
 @trace
 def get_credential():
     try:
@@ -40,13 +145,12 @@ def get_credential():
 
 #for pf tracing see details here: https://learn.microsoft.com/en-us/azure/ai-studio/how-to/develop/trace-local-sdk?tabs=python 
 #local traces see in: http://127.0.0.1:23337/v1.0/ui/traces/
-@trace
+
 def configure_tracing(collection_name: str = "llmops")-> None:
     os.environ["APPLICATIONINSIGHTS_CONNECTION_STRING"] = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
     configure_azure_monitor(collection_name=collection_name)
     start_trace()
-    
-@trace    
+       
 def configure_logging():
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)

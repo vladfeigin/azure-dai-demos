@@ -67,3 +67,5 @@ llmops/eval_results_20241101170635.json
 llmops/aimodel/model-test.ipynb
 llmops/evaluation/__pycache__/__init__.cpython-311.pyc
 llmops/evaluation/__pycache__/evalflow.cpython-311.pyc
+llmops/data_preparation/__pycache__/semantic_chunking_di.cpython-311.pyc
+.DS_Store

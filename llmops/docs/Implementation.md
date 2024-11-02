@@ -1,11 +1,6 @@
-### Data Prep
+## Implementation 
 
-### Development
-
-
-
-
-### Tracing
+### Tracing 
 - To see local traces run from browser : http://127.0.0.1:23337/
 - You need to be sure that Prompt Flow service is running on your local machine
 - Run from command line: pf service status to check if service is running
@@ -40,3 +35,8 @@ Prepare Prompty per metric(system prompt)
 ### Depolyment
 
 
+
+
+
+
+This project is a collection of demos that show how to use Azure Data and AI services to build and deploy AI applications.

@@ -4,7 +4,7 @@ import os
 from promptflow.client import PFClient
 from rag.rag_main import RAG
 from evaluation.evalflow import eval_batch
-from utils.utils import configure_logging, configure_tracing, configure_env
+from utils.utils import configure_logging, configure_tracing, configure_aoai_env
 import pandas as pd
 
 # Configure logging and tracing
@@ -33,7 +33,7 @@ def runflow(dump_output: bool = False):
                 "answer": "${data.answer}", # This ground truth answer is not used in the flow  
                 "context": "${data.context}", # This context ground truth is not used in the flow
             },
-            model_config=configure_env(),
+            model_config=configure_aoai_env(),
             stream=True,  # To see the running progress of the flow in the console
         )
     except Exception as e:
