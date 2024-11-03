@@ -5,6 +5,8 @@ import os
 from dotenv import load_dotenv
 _=load_dotenv()
 
+import os
+from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient
 from typing import List
 from langchain_community.document_loaders import AzureAIDocumentIntelligenceLoader
@@ -62,9 +64,6 @@ def process_document(doc_path, mode="markdown"):
 
 
 def get_files_from_blob_storage(storage_account_name:str, container_name:str, folder_name:str)->List[str]:
-    
-    from azure.identity import DefaultAzureCredential
-    import os
     # Create a blob service client
     blob_service_client = BlobServiceClient(account_url=f"https://{storage_account_name}.blob.core.windows.net", credential=DefaultAzureCredential())
     # Get the container client
@@ -75,26 +74,43 @@ def get_files_from_blob_storage(storage_account_name:str, container_name:str, fo
     files = [blob.name for blob in blobs]
     return files
 
+def download_blob(storage_account_name: str, container_name: str, blob_name: str, download_path: str):
+    """
+    Download a blob from Azure Blob Storage to a local file.
+    """
+    credential = DefaultAzureCredential()
+    blob_service_client = BlobServiceClient(
+        account_url=f"https://{storage_account_name}.blob.core.windows.net",
+        credential=credential
+    )
+    blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
+    
+    with open(download_path, "wb") as download_file:
+        download_file.write(blob_client.download_blob().readall())
+    print(f"Downloaded {blob_name} to {download_path}")
+    
 #create a function getting a list of files from the blob storage and then it calculates path to the file and 
 # calls process_document function to process the document
-def process_files_from_blob_storage(storage_account_name:str, container_name:str, folder_name:str, mode="markdown"):
+def process_files_from_blob_storage(storage_account_name: str, container_name: str, folder_name: str = None, mode: str = "markdown"):
+    """
+    Download and process files from Azure Blob Storage.
+    """
     files = get_files_from_blob_storage(storage_account_name, container_name, folder_name)
     for file in files:
-        file_path = f"https://{storage_account_name}.blob.core.windows.net/{container_name}/{file}"
-        print("Processing file: ", file_path)
-        chunks = process_document(file_path, mode)
-        print("Number of chunks: ", len(chunks))
+        local_path = os.path.join("/tmp", os.path.basename(file))
+        download_blob(storage_account_name, container_name, file, local_path)
+        print(f"Processing file: {local_path}")
+        chunks = process_document(local_path, mode)
+        print(f"Number of chunks: {len(chunks)}")
+        os.remove(local_path)  # Clean up the downloaded file
     return chunks
 
-
-
-
-
-
-
-
 if __name__ == "__main__":
-    chinks = process_document("./data/hyde.pdf")
+    #chinks = process_document("./data/hyde.pdf")
+    files = get_files_from_blob_storage("genaiworkshopstorage1", "docs", None)
+    print(files)
+    process_files_from_blob_storage("genaiworkshopstorage1", "docs", None)
+    
 
 
                          
