@@ -38,4 +38,31 @@ Examples for the chat session are:
 
 
 ## Evaluation
-TODO
+
+Evaluation metrics are:
+- Groundeness
+- Coherence
+- Similarity
+- Relevance
+
+TODO - add metrics description and how to calculate them
+
+
+To run evaluation you must prepare a test data set, this is crucial for the evaluation.
+The data set is located in ./rag/data.json file
+
+The evaluation process first runs the entire RAG flow and afterwards run evaluation on the generated responses.
+
+In llmops directory run the following command:
+**python -m runflow_local**
+
+The code will be executed locally and you will see the evaluation results in the console and the traces in the browser as described above.
+
+Behind the scenes the logs and traces are send to blob storage and Event Hub for further analysis.
+
+This demo depicts the developmend life cycle of Gen AP prpject.
+
+
+    
+
+
