@@ -6,13 +6,14 @@
 2. Navigate to the `aidemos/llmops` directory.
 
 3. Run the following command to install the dependencies.
-    pip install -r requirements.txt
+    **pip install -r requirements.txt**
 
-## Chat Session
+## Start chat Session
 
 1. Start the local application server, in commad line run:
+    Make sure you are in the `aidemos/llmops` directory.    
     **pf flow serve --source ./ --port 8080 --host localhost**
-    Make sure you are in the `aidemos/llmops` directory.
+    
 
 2. The chat UI will be opened automatically in your default browser. If not, you can manually open the browser and navigate to `http://localhost:8080`. 
     
@@ -34,7 +35,7 @@ Examples for the chat session are:
     Select the first trace m click on it. 
     Select the "Show Gantt" button in the upper right corner.
 
-5. Explore the traces
+5. Explore the traces and logs
 
 
 ## Evaluation
@@ -59,6 +60,7 @@ In llmops directory run the following command:
 The code will be executed locally and you will see the evaluation results in the console and the traces in the browser as described above.
 
 Behind the scenes the logs and traces are send to blob storage and Event Hub for further analysis.
+TODO show prompt flow plugin in VS Code
 
 
 

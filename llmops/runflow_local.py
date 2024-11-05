@@ -9,7 +9,6 @@ import pandas as pd
 
 # Configure logging and tracing
 logger = configure_logging()
-configure_tracing(__file__)
 
 flow = "."  # Path to the flow directory
 data = "./rag/data.jsonl"  # Path to the data file for batch evaluation
