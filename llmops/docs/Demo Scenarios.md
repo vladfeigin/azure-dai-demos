@@ -45,7 +45,7 @@ Evaluation metrics are:
 - Similarity
 - Relevance
 
-TODO - add metrics description and how to calculate them
+**TODO** - add metrics description and how to calculate them
 
 
 To run evaluation you must prepare a test data set, this is crucial for the evaluation.
@@ -60,9 +60,14 @@ The code will be executed locally and you will see the evaluation results in the
 
 Behind the scenes the logs and traces are send to blob storage and Event Hub for further analysis.
 
-This demo depicts the developmend life cycle of Gen AP prpject.
 
 
-    
+## Statistics in Fabric
+
+Open Fabric Portal and navigate to the the custom dashboard.
+TODO - add more details
+
+
+This demo depicts the developmend life cycle of Gen AP prpject.  
 
 
