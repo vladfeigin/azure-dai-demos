@@ -15,11 +15,11 @@ from azure.search.documents.indexes.models import (
     SimpleField,
     TextWeights,
 )
+from opentelemetry import trace
+from utils.utils import configure_logging
 
-# Configure logging
-from logging import INFO, getLogger
-# Logging calls with this logger will be tracked
-logger = getLogger(__name__)
+logger = configure_logging()
+tracer = trace.get_tracer(__name__)
 
 # Azure Search configuration
 AZURE_AI_SEARCH_SERVICE_ENDPOINT = os.getenv("AZURE_AI_SEARCH_SERVICE_ENDPOINT")
@@ -142,11 +142,12 @@ class AISearch:
         :raises ValueError: If input is invalid.
         """
         logger.info(f"Search: Searching for similar documents using query: {query}")
-        if not isinstance(query, str) or not query:
-            raise ValueError("Search query must be a non-empty string")
+        with tracer.start_as_current_span("aisearch"):
+            if not isinstance(query, str) or not query:
+                raise ValueError("Search query must be a non-empty string")
         
-        docs = self._vector_search.similarity_search (query=query, k=top_k, search_type=search_type)
-        return docs[0].page_content
+            docs = self._vector_search.similarity_search (query=query, k=top_k, search_type=search_type)
+            return docs[0].page_content
 
 
 if __name__ == "__main__":

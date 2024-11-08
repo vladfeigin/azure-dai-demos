@@ -22,13 +22,15 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
+from opentelemetry import trace
 
-from promptflow.tracing import trace, start_trace
-TRACING_COLLECTION_NAME = "rag"
-# Configure logging
-#from logging import INFO, getLogger
-# Logging calls with this logger will be tracked
-#logger = getLogger(__name__)  
+#tracing_collection_name = "rag_llmops"
+
+# Configure tracing
+#tracer = configure_tracing(collection_name=tracing_collection_name)
+tracer = trace.get_tracer(__name__)
+logger = configure_logging()
+
 
 USER_INTENT_SYSTEM_PROMPT=""" Your goal is to retrieve a user intent. Given a chat history and the latest user question,
     which might reference context in the chat history, formulate a standalone question which can be understood without the chat history. 
@@ -56,10 +58,7 @@ HUMAN_TEMPLATE="""question: {input}"""
 class RAG:
     
     def __init__(self) -> None:
-        
-        self.logger = configure_logging()
-        configure_tracing(__file__)
-        
+             
         #init the AIModel class enveloping the Azure OpenAI LLM model
         self.aimodel = AIModel(
             azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
@@ -111,26 +110,29 @@ class RAG:
         output_messages_key="answer",
         ) 
          
-    @trace
     def __call__(
         self,
         session_id: str ,
         question: str = " "
     ) -> str:
         """>>>RAG Flow entry function."""
-        self.logger.info("RAG.__call__start_chat")
-        response = self.chat(session_id, question)
-        self.logger.info(f"RAG.__call__#response= {response}")
-        return response
+        with tracer.start_as_current_span("RAG.__call__") as span:
+            logger.info("RAG.__call__start_chat")
+            span.set_attribute("session_id", session_id)
+            
+            response = self.chat(session_id, question)
+            
+            logger.info(f"RAG.__call__#response= {response}")
+            return response
     
-    @trace
     def update_chat_history(self, chat_history, question, answer):
         chat_history.extend([
             HumanMessage(content=question),
             AIMessage(content=answer)
         ])
         return chat_history
-    @trace
+  
+
     def get_session_history(self, session_id:str) -> BaseChatMessageHistory:
         
         #self.logger.info(f"get_session_history#session_id= {session_id}")
@@ -138,25 +140,29 @@ class RAG:
             self._session_store.create_session(session_id)
             
         return self._session_store.get_session(session_id)
-    @trace        
+  
+          
     def chat_stateless(self, question, chat_history=None, **kwargs):
         response = self._rag_chain.invoke({"input": question, "chat_history": chat_history})
         return response["answer"]
     
-    @trace
+    
     def chat(self, session_id, question, **kwargs):  
-        self.logger.info(f"chat#session_id= {session_id}, question= {question}")
         
-        try:
-            response = self._conversational_rag_chain.invoke( {"input": question},
+        logger.info(f"chat#session_id= {session_id}, question= {question}")
+        with tracer.start_as_current_span("RAG.__chat__") as span:
+            
+            span.set_attribute("session_id", session_id)
+            span.set_attribute("vlad", "feigin")
+            
+            try:
+                response = self._conversational_rag_chain.invoke( {"input": question},
                                                           config={"configurable": {"session_id": session_id}}
                                                         )
-            #self.logger.info(f"chat#response= {response}")
-            return response["answer"]
-        except Exception as e:
-            self.logger.error(f"chat#exception= {e}")
+            except Exception as e:
+                logger.error(f"chat#exception= {e}")
             
-        return response["answer"]
+            return response["answer"]
     
 if __name__ == "__main__":
     

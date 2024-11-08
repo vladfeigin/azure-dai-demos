@@ -4,8 +4,15 @@ load_dotenv()
 import logging
 
 from azure.identity import DefaultAzureCredential, InteractiveBrowserCredential
-from promptflow.tracing import trace, start_trace
+#from promptflow.tracing import trace, start_trace
 from azure.monitor.opentelemetry import configure_azure_monitor
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
+from opentelemetry.instrumentation.logging import LoggingInstrumentor
+from azure.monitor.opentelemetry import configure_azure_monitor
+from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter, AzureMonitorTraceExporter, AzureMonitorMetricExporter
+from opentelemetry.instrumentation.requests import RequestsInstrumentor
 
 def configure_aoai_env():
     #check if all the required environment variables are set than skip the rest of the code:
@@ -132,7 +139,6 @@ def configure_docintell_env():
        
     return doc_intelligence_config
 
-@trace
 def get_credential():
     try:
         credential = DefaultAzureCredential()
@@ -144,13 +150,46 @@ def get_credential():
     return credential
 
 #for pf tracing see details here: https://learn.microsoft.com/en-us/azure/ai-studio/how-to/develop/trace-local-sdk?tabs=python 
-#local traces see in: http://127.0.0.1:23337/v1.0/ui/traces/
+#local prompt flow traces see in: http://127.0.0.1:23337/v1.0/ui/traces/
 
-def configure_tracing(collection_name: str = "llmops")-> None:
-    os.environ["APPLICATIONINSIGHTS_CONNECTION_STRING"] = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
-    configure_azure_monitor(collection_name=collection_name)
-    start_trace()
-       
+#def configure_tracing(collection_name: str = "llmops")-> None:
+#    os.environ["APPLICATIONINSIGHTS_CONNECTION_STRING"] = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
+#    configure_azure_monitor(collection_name=collection_name)
+#    start_trace()
+
+# Create a function for configuring tracing
+def configure_tracing(collection_name: str = "llmops-workshop", enable_console_exporter: bool = True):
+    # Initialize tracing provider only once
+    
+    if not isinstance(trace.get_tracer_provider(), TracerProvider):
+        
+        tracer_provider = TracerProvider()
+        trace.set_tracer_provider(tracer_provider)
+                
+        connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
+        if not connection_string:
+            raise ValueError("APPLICATIONINSIGHTS_CONNECTION_STRING environment variable is not set.")
+
+        os.environ["APPLICATIONINSIGHTS_CONNECTION_STRING"] = connection_string
+        
+        configure_azure_monitor(collection_name=collection_name)
+
+        traces_exporter = AzureMonitorTraceExporter()
+        trace_processor = BatchSpanProcessor(traces_exporter)
+        tracer_provider.add_span_processor(trace_processor)
+        
+        # Configure console exporter for local debugging
+        if enable_console_exporter:
+            console_span_processor = BatchSpanProcessor(ConsoleSpanExporter())
+            tracer_provider.add_span_processor(console_span_processor)
+        #external library instrumentation    
+        RequestsInstrumentor().instrument()
+        
+        #LoggingInstrumentor().instrument(set_logging_format=True)
+    #return the configured tracer
+    return trace.get_tracer(__name__)    
+
+
 def configure_logging():
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)

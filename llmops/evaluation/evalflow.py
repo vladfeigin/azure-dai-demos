@@ -14,8 +14,6 @@ load_dotenv()
 
 # Configure logging
 logger = configure_logging()
-#enabling this will send double traces to the Application Insights
-#configure_tracing()
 
 # Get LLM configuration
 model_config = configure_aoai_env()
