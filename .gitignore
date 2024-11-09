@@ -70,3 +70,4 @@ llmops/evaluation/__pycache__/evalflow.cpython-311.pyc
 llmops/data_preparation/__pycache__/semantic_chunking_di.cpython-311.pyc
 .DS_Store
 llmops/requirements.txt-1
+llmops/evaluation/__pycache__/variant.cpython-311.pyc

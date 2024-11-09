@@ -124,6 +124,9 @@ class RAG:
             
             logger.info(f"RAG.__call__#response= {response}")
             return response
+        
+    def get_chat_prompt_template(self):
+        return self._chat_prompt_template
     
     def update_chat_history(self, chat_history, question, answer):
         chat_history.extend([
@@ -153,7 +156,8 @@ class RAG:
         with tracer.start_as_current_span("RAG.__chat__") as span:
             
             span.set_attribute("session_id", session_id)
-            span.set_attribute("vlad", "feigin")
+            span.set_attribute("application_id", "303474")
+            span.set_attribute("application_name", "ethernity2")
             
             try:
                 response = self._conversational_rag_chain.invoke( {"input": question},

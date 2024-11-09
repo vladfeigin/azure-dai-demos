@@ -1,10 +1,14 @@
 
 import os
+import pandas as pd
+from typing import Tuple
 from promptflow.client import PFClient
+from promptflow.entities import Run
 from rag.rag_main import RAG
+from evaluation.variant import VariantLLM
 from evaluation.evalflow import eval_batch
 from utils.utils import configure_logging, configure_tracing, configure_aoai_env
-import pandas as pd
+
 
 tracing_collection_name = "rag_llmops"
 # Configure logging and tracing
@@ -22,8 +26,7 @@ def rag_flow(session_id: str, question: str = " ") -> str:
 
 # run the flow
 
-
-def runflow(dump_output: bool = False):
+def runflow(variant:VariantLLM,  dump_output: bool = False) -> Tuple[Run, pd.DataFrame]:
     logger.info("Running the flow for batch.")
     with tracer.start_as_current_span("runflow"):
         pf = PFClient()
@@ -40,6 +43,7 @@ def runflow(dump_output: bool = False):
                     "context": "${data.context}",
                 },
                 model_config=configure_aoai_env(),
+                tags={"variant": variant.to_dict()},
                 stream=True,  # To see the running progress of the flow in the console
             )
         except Exception as e:
@@ -54,24 +58,39 @@ def runflow(dump_output: bool = False):
             # timestamp = pd.Timestamp.now().strftime("%Y%m%d%H%M%S")
             details.to_csv(f"batch_flow_output.txt", index=False)
 
-        return details
+        return base_run, details
 
 # the function which runs the batch flow and then evaluates the output
-def run_and_eval_flow(dump_output: bool = False):
+def run_and_eval_flow(variant:VariantLLM, dump_output: bool = False):
     with tracer.start_as_current_span("run_and_eval_flow") as span:
         # Load the batch output from runflow
-        batch_output = runflow(dump_output=dump_output)
+        base_run, batch_output = runflow(variant, dump_output=dump_output)
         eval_res, eval_metrics = eval_batch(
             batch_output, dump_output=dump_output)
         logger.info(
-            f"Batch evaluation results: {eval_res.to_dict(orient='records')}")
+            f"<BATCH-EVALUATION-FLOW> Metadata: {base_run._to_dict()} result: {eval_res.to_dict(orient='records')}")
         logger.info(
-            f"Batch evaluation metrics:{eval_metrics.to_dict(orient='records')}")
+            f"<BATCH-EVALUATION-FLOW-AGGREGATED-METRICS> Metadata: {base_run._to_dict()} result: {eval_metrics.to_dict(orient='records')}")
 
+
+
+from langchain.prompts import ChatPromptTemplate
 
 if __name__ == "__main__":
 
     # variant
-    variant = ""
+    variant = VariantLLM(
+        variant_id="01",
+        variant_name="gpt4o-2024-05-13-api-2024-08-01-preview",
+        variant_description="testing variant: gpt4o-2024-05-13-api-2024-08-01-preview",
+        llm_model_description="testing gpt4o ver. 2024-05-13 model.. ",
+        llm_model_name="gpt4o",
+        llm_model_version="2024-05-13",
+        model_parameters={"seed": 42, "max_tokens": 2000, "temperature": 0.0},
+        aoai_api_version='2024-08-01-preview',
+        aoai_endpoint="https://openai-api.azurewebsites.net",
+        #prompt_template="Empty prompt template!",
+        
+    )
 
-    run_and_eval_flow(dump_output=False)
+    run_and_eval_flow(variant, dump_output=False)
