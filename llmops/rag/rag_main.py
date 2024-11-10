@@ -37,9 +37,6 @@ class RAGConfig(FlowConfiguration):
     def __init__(self, flow_name: str, llm_config: LLMConfig, **kwargs) -> None:
         super().__init__(flow_name, **kwargs)
         self.llm_config = llm_config
-        # Initialize other attributes from kwargs
-        #for key, value in kwargs.items():
-        #    setattr(self, key, value)
 
     def to_dict(self) -> dict:
         # Start with the dictionary from the parent class
@@ -54,20 +51,20 @@ class RAGConfig(FlowConfiguration):
 #RAG class encapsulates the RAG (Retrieval Augmented Generation) implementation
 class RAG:
     #RAGConfig class encapsulates the configuration for both user intent and chat since those could diffrent models
-    def __init__(self, rag_config: RAGConfig, api_key:str) -> None:
+    def __init__(self, rag_config: dict, api_key:str) -> None:
              
         #check if ragConfig is not None - throw exception
         if rag_config is None or api_key is None:
             raise ValueError("RAGConfig and api_key are required")
         
         self.rag_config = rag_config
-        llm_config = rag_config.llm_config
+        llm_config = rag_config["llm_config"]
                  
         #init the AIModel class enveloping the Azure OpenAI LLM model
         self.aimodel = AIModel(
-            azure_deployment = llm_config.azure_deployment,
-            openai_api_version = llm_config.openai_api_version,
-            azure_endpoint = llm_config.azure_endpoint,
+            azure_deployment = llm_config["azure_deployment"],
+            openai_api_version = llm_config["openai_api_version"],
+            azure_endpoint = llm_config["azure_endpoint"],
             api_key = api_key
         )
         #init the AISearch class , enveloping the Azure Search retriever
@@ -78,7 +75,7 @@ class RAG:
         #create a prompt template for user intent
         self._user_intent_prompt_template = ChatPromptTemplate.from_messages(
             [
-                ("system", rag_config.intent_system_prompt),
+                ("system", rag_config["intent_system_prompt"]),
                 MessagesPlaceholder("chat_history"),
                 ("human", "{input}"),
                 
@@ -94,7 +91,7 @@ class RAG:
         #prepare final chat chain with history aware retriever 
         self._chat_prompt_template = ChatPromptTemplate.from_messages(
             [
-                ("system", rag_config.chat_system_prompt),
+                ("system", rag_config["chat_system_prompt"]),
                 MessagesPlaceholder("chat_history"),
                 ("human", "{input}"),
             ]
@@ -169,7 +166,7 @@ class RAG:
                 logger.error(f"chat#exception= {e}")
             
             return response["answer"]
-    
+"""  
 if __name__ == "__main__":
     
     # Initialize the RAG class and empty history
@@ -180,7 +177,7 @@ if __name__ == "__main__":
     resp = rag(session_id, "What's Microsoft Fabric?")
     print (f"***response1 = {resp}")
     
-"""
+
     resp = rag.chat(session_id, question="What's Microsoft Fabric Data Factory?")
     print (f"***response1 = {resp}")
     

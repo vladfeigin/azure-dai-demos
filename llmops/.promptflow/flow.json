@@ -1,5 +1,5 @@
 {
-    "function": "__call__",
+    "function": "rag_flow_test_web",
     "$schema": "https://azuremlschemas.azureedge.net/promptflow/latest/flow.schema.json",
     "description": "A flow that runs the RAG application with all necessary modules.",
     "language": "python",
@@ -18,7 +18,7 @@
             "context": ""
         }
     },
-    "entry": "rag.rag_main:RAG",
+    "entry": "runflow_local:rag_flow_test_web",
     "environment": {
         "docker_image": "python:3.11-slim",
         "python_requirements_txt": "./requirements.txt"

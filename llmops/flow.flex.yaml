@@ -21,7 +21,8 @@ sample:
     answer: "Microsoft Fabric is an end-to-end analytics and data platform designed for enterprises"
     context: ""
 
-entry: rag.rag_main:RAG
+#entry: rag.rag_main:RAG
+entry: runflow_local:rag_flow_test_web
 
 environment:
   docker_image: "python:3.11-slim"

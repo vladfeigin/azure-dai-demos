@@ -22,7 +22,7 @@ data = "./rag/data.jsonl"  # Path to the data file for batch evaluation
 ##--------------------------Configuration of the LLM model and RAG--------------------------##
 
 llm_config = LLMConfig(
-        flow_name = tracing_collection_name,
+        flow_name = "rag_llmops::llm_config",
         azure_deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT"), 
         openai_api_version = os.getenv("AZURE_OPENAI_API_VERSION"), 
         azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT"),
@@ -31,7 +31,7 @@ llm_config = LLMConfig(
     )
 
 rag_config = RAGConfig(
-        flow_name = tracing_collection_name,
+        flow_name = "rag_llmops::rag_config",
         llm_config = llm_config,
         intent_system_prompt = USER_INTENT_SYSTEM_PROMPT,
         chat_system_prompt = SYSTEM_PROMPT,
@@ -42,15 +42,20 @@ rag_config = RAGConfig(
 
 # this function is used to run the RAG flow for batch evaluation
 def rag_flow(session_id: str, question: str = " ") -> str:
-    with tracer.start_as_current_span("rag_flow"):
-        rag = RAG(rag_config, os.getenv("AZURE_OPENAI_KEY"))
+    with tracer.start_as_current_span("batch::evaluation::rag_flow"):
+        rag = RAG(rag_config.to_dict(), os.getenv("AZURE_OPENAI_KEY"))
         return rag(session_id, question)
+    
+#this function serves for running: pf flow serve --source ./ --port 8080 --host localhost for running chat UI in browser
+def rag_flow_test_web(session_id: str, question: str = " ") -> str:
+    with tracer.start_as_current_span("rag_flow_web_ui") as span:
+        rag = RAG(rag_config.to_dict(), os.getenv("AZURE_OPENAI_KEY"))
+        return rag(session_id, question)    
 
 # run the flow
-
 def runflow(dump_output: bool = False) -> Tuple[Run, pd.DataFrame]:
     logger.info("Running the flow for batch.")
-    with tracer.start_as_current_span("runflow"):
+    with tracer.start_as_current_span("batch::evaluation::runflow") as span:
         pf = PFClient()
         try:
             base_run = pf.run(
@@ -86,7 +91,7 @@ def runflow(dump_output: bool = False) -> Tuple[Run, pd.DataFrame]:
 
 # the function which runs the batch flow and then evaluates the output
 def run_and_eval_flow(dump_output: bool = False):
-    with tracer.start_as_current_span("run_and_eval_flow") as span:
+    with tracer.start_as_current_span("batch::evaluation::run_and_eval_flow") as span:
         # Load the batch output from runflow
         base_run, batch_output = runflow(dump_output=dump_output)
         eval_res, eval_metrics = eval_batch(
