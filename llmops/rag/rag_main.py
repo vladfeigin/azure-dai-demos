@@ -10,8 +10,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from aisearch.ai_search import AISearch
-from aimodel.ai_model import AIModel
+from aimodel.ai_model import AIModel, LLMConfig
 from rag.session_store import SimpleSessionStore
+from flow_configuration.flow_config import FlowConfiguration
 from utils.utils import configure_tracing, get_credential, configure_logging
 
 from langchain_core.messages import AIMessage, HumanMessage
@@ -31,52 +32,53 @@ from opentelemetry import trace
 tracer = trace.get_tracer(__name__)
 logger = configure_logging()
 
+ 
+class RAGConfig(FlowConfiguration):
+    def __init__(self, flow_name: str, llm_config: LLMConfig, **kwargs) -> None:
+        super().__init__(flow_name, **kwargs)
+        self.llm_config = llm_config
+        # Initialize other attributes from kwargs
+        #for key, value in kwargs.items():
+        #    setattr(self, key, value)
 
-USER_INTENT_SYSTEM_PROMPT=""" Your goal is to retrieve a user intent. Given a chat history and the latest user question,
-    which might reference context in the chat history, formulate a standalone question which can be understood without the chat history. 
-    Do NOT answer the question, just reformulate it if needed and otherwise return it as is."""
+    def to_dict(self) -> dict:
+        # Start with the dictionary from the parent class
+        config_dict = super().to_dict()
 
-SYSTEM_PROMPT="""You are helpful assistant, helping the use nswer questions about Microsoft technologies. \
-    You answer questions about Azure, Microsoft 365, Dynamics 365, Power Platform, Azure, Microsoft Fabric and other Microsoft technologies \
-        Don't use your internal knowledge, but only provided context in the prompt. \
-        Don't answer not related to Microsoft technologies questions. \
-        Provide the best answer based on the context in concise and clear manner. \
-        Find the main points in a question and emphasize them in the answer. \
-        If the provided context is not enough to answer the question, ask for more information. \
-            
-        <context>
-        {context}
-        </context>
-        """
-        
-HUMAN_TEMPLATE="""question: {input}"""
-#for pf tracing see details here: https://learn.microsoft.com/en-us/azure/ai-studio/how-to/develop/trace-local-sdk?tabs=python 
-#start_trace(collection_name=TRACING_COLLECTION_NAME)
-#local traces see in: http://127.0.0.1:23337/v1.0/ui/traces/
+        # Add the llm_config serialized to a dictionary
+        config_dict['llm_config'] = self.llm_config.to_dict()
 
+        return config_dict
+     
+      
 #RAG class encapsulates the RAG (Retrieval Augmented Generation) implementation
 class RAG:
-    
-    def __init__(self) -> None:
+    #RAGConfig class encapsulates the configuration for both user intent and chat since those could diffrent models
+    def __init__(self, rag_config: RAGConfig, api_key:str) -> None:
              
+        #check if ragConfig is not None - throw exception
+        if rag_config is None or api_key is None:
+            raise ValueError("RAGConfig and api_key are required")
+        
+        self.rag_config = rag_config
+        llm_config = rag_config.llm_config
+                 
         #init the AIModel class enveloping the Azure OpenAI LLM model
         self.aimodel = AIModel(
-            azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
-            openai_api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
-            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-            api_key=os.getenv("AZURE_OPENAI_KEY")
+            azure_deployment = llm_config.azure_deployment,
+            openai_api_version = llm_config.openai_api_version,
+            azure_endpoint = llm_config.azure_endpoint,
+            api_key = api_key
         )
-        
         #init the AISearch class , enveloping the Azure Search retriever
         self.aisearch = AISearch()
-        
         #initiate the session store
         self._session_store = SimpleSessionStore()
         
         #create a prompt template for user intent
         self._user_intent_prompt_template = ChatPromptTemplate.from_messages(
             [
-                ("system", USER_INTENT_SYSTEM_PROMPT),
+                ("system", rag_config.intent_system_prompt),
                 MessagesPlaceholder("chat_history"),
                 ("human", "{input}"),
                 
@@ -92,7 +94,7 @@ class RAG:
         #prepare final chat chain with history aware retriever 
         self._chat_prompt_template = ChatPromptTemplate.from_messages(
             [
-                ("system", SYSTEM_PROMPT),
+                ("system", rag_config.chat_system_prompt),
                 MessagesPlaceholder("chat_history"),
                 ("human", "{input}"),
             ]

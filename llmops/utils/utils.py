@@ -179,9 +179,9 @@ def configure_tracing(collection_name: str = "llmops-workshop", enable_console_e
         tracer_provider.add_span_processor(trace_processor)
         
         # Configure console exporter for local debugging
-        if enable_console_exporter:
-            console_span_processor = BatchSpanProcessor(ConsoleSpanExporter())
-            tracer_provider.add_span_processor(console_span_processor)
+        #if enable_console_exporter:
+        #    console_span_processor = BatchSpanProcessor(ConsoleSpanExporter())
+        #    tracer_provider.add_span_processor(console_span_processor)
         #external library instrumentation    
         RequestsInstrumentor().instrument()
         
