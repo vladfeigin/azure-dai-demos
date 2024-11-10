@@ -1,6 +1,7 @@
 
 import os
 import pandas as pd
+import json
 from typing import Tuple
 from promptflow.client import PFClient
 from promptflow.entities import Run
@@ -35,7 +36,9 @@ rag_config = RAGConfig(
         llm_config = llm_config,
         intent_system_prompt = USER_INTENT_SYSTEM_PROMPT,
         chat_system_prompt = SYSTEM_PROMPT,
-        human_template = HUMAN_TEMPLATE
+        human_template = HUMAN_TEMPLATE,
+        application_name = "rag_llmops_workshop",
+        application_version = "1.0"
     )   
 
 ##--------------------------Configuration of the LLM model and RAG--------------------------##
@@ -96,13 +99,23 @@ def run_and_eval_flow(dump_output: bool = False):
         base_run, batch_output = runflow(dump_output=dump_output)
         eval_res, eval_metrics = eval_batch(
             batch_output, dump_output=dump_output)
+        
+        #serialize the results from dictionary to json
         logger.info(
-            f"<BATCH-EVALUATION-FLOW> METADATA: {base_run._to_dict()} RESULT: {eval_res.to_dict(orient='records')}")
+            json.dumps({
+            "name": "batch-evaluation-flow",
+            "metadata": base_run._to_dict(),
+            "result": eval_res.to_dict(orient='records')
+            })
+        )
+        # Log the batch evaluation flow aggregated metrics
         logger.info(
-            f"<BATCH-EVALUATION-FLOW-AGGREGATED-METRICS> METADATA: {base_run._to_dict()} RESULT: {eval_metrics.to_dict(orient='records')}")
-
-
-
+            json.dumps({
+            "name": "batch-evaluation-flow-metrics",
+            "metadata": base_run._to_dict(),
+            "result": eval_metrics.to_dict(orient='records')
+            })
+        )
 from langchain.prompts import ChatPromptTemplate
 
 if __name__ == "__main__": 
