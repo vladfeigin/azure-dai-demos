@@ -64,6 +64,7 @@ def runflow(dump_output: bool = False) -> Tuple[Run, pd.DataFrame]:
             base_run = pf.run(
                 flow=rag_flow,
                 data=data,
+                description="Batch evaluation of the RAG application",
                 column_mapping={
                     "session_id": "${data.session_id}",
                     "question": "${data.question}",
@@ -116,6 +117,7 @@ def run_and_eval_flow(dump_output: bool = False):
             "result": eval_metrics.to_dict(orient='records')
             })
         )
+        logger.info(">>>Batch evaluation flow completed successfully.")
 from langchain.prompts import ChatPromptTemplate
 
 if __name__ == "__main__": 
