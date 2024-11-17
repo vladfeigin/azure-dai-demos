@@ -38,6 +38,7 @@ rag_config = RAGConfig(
         chat_system_prompt = SYSTEM_PROMPT,
         human_template = HUMAN_TEMPLATE,
         application_name = "rag_llmops_workshop",
+        config_version = "1.0",
         application_version = "1.0"
     )   
 
