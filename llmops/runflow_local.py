@@ -34,6 +34,7 @@ llm_config = LLMConfig(
 rag_config = RAGConfig(
         flow_name = "rag_llmops::rag_config",
         llm_config = llm_config,
+        variant = "gpt4o:2024-05-13",
         intent_system_prompt = USER_INTENT_SYSTEM_PROMPT,
         chat_system_prompt = SYSTEM_PROMPT,
         human_template = HUMAN_TEMPLATE,

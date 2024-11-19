@@ -16,7 +16,14 @@ load_dotenv()
 logger = configure_logging()
 
 # Get LLM configuration
-model_config = configure_aoai_env()
+#model_config = configure_aoai_env()
+model_config = {
+    "azure_endpoint": os.getenv("AZURE_OPENAI_EVALUATION_ENDPOINT"),
+    "api_key": os.getenv("AZURE_OPENAI_KEY"),
+    "azure_deployment": os.getenv("AZURE_OPENAI_EVALUATION_DEPLOYMENT"),
+    "api_version": os.getenv("AZURE_OPENAI_API_VERSION"),
+}
+
 
 # Initialize dictionary with evaluators
 evaluators = {
