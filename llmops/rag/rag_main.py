@@ -157,6 +157,7 @@ class RAG:
             span.set_attribute("session_id", session_id)
             span.set_attribute("application_name", self.rag_config["application_name"])
             span.set_attribute("application_version", self.rag_config["application_version"])
+            span.set_attribute("config_version", self.rag_config["config_version"])
             
             try:
                 response = self._conversational_rag_chain.invoke( {"input": question},
