@@ -5,6 +5,7 @@ import json
 from typing import Tuple
 from promptflow.client import PFClient
 from promptflow.entities import Run
+from promptflow.tracing import start_trace
 from aimodel.ai_model import LLMConfig
 from rag.rag_main import RAG, RAGConfig
 from rag.prompts import USER_INTENT_SYSTEM_PROMPT, SYSTEM_PROMPT, HUMAN_TEMPLATE
@@ -34,7 +35,7 @@ llm_config = LLMConfig(
 rag_config = RAGConfig(
         flow_name = "rag_llmops::rag_config",
         llm_config = llm_config,
-        variant = "gpt4o:2024-05-13",
+        variant = "gpt35-turbo:1106",
         intent_system_prompt = USER_INTENT_SYSTEM_PROMPT,
         chat_system_prompt = SYSTEM_PROMPT,
         human_template = HUMAN_TEMPLATE,
@@ -53,6 +54,7 @@ def rag_flow(session_id: str, question: str = " ") -> str:
     
 #this function serves for running: pf flow serve --source ./ --port 8080 --host localhost for running chat UI in browser
 def rag_flow_test_web(session_id: str, question: str = " ") -> str:
+    start_trace()
     with tracer.start_as_current_span("rag_flow_web_ui") as span:
         rag = RAG(rag_config.to_dict(), os.getenv("AZURE_OPENAI_KEY"))
         return rag(session_id, question)    
@@ -123,4 +125,4 @@ def run_and_eval_flow(dump_output: bool = False):
 from langchain.prompts import ChatPromptTemplate
 
 if __name__ == "__main__": 
-    run_and_eval_flow( dump_output=False )
+    run_and_eval_flow( dump_output=True )

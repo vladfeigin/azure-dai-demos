@@ -10,6 +10,7 @@ from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
 from opentelemetry.instrumentation.logging import LoggingInstrumentor
+from opentelemetry.instrumentation.langchain import LangchainInstrumentor
 from azure.monitor.opentelemetry import configure_azure_monitor
 from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter, AzureMonitorTraceExporter, AzureMonitorMetricExporter
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
@@ -160,9 +161,13 @@ def get_credential():
 # Create a function for configuring tracing
 def configure_tracing(collection_name: str = "llmops-workshop", enable_console_exporter: bool = True):
     # Initialize tracing provider only once
-    
+       
     if not isinstance(trace.get_tracer_provider(), TracerProvider):
-        
+        #instrument Langchain
+        langchain_instrumentor = LangchainInstrumentor()
+        if not langchain_instrumentor.is_instrumented_by_opentelemetry:
+            langchain_instrumentor.instrument()
+        #genereal tracing configuration
         tracer_provider = TracerProvider()
         trace.set_tracer_provider(tracer_provider)
                 
