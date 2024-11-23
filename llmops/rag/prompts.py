@@ -4,7 +4,7 @@ USER_INTENT_SYSTEM_PROMPT=""" Your goal is to retrieve a user intent. Given a ch
     which might reference context in the chat history, formulate a standalone question which can be understood without the chat history. 
     Do NOT answer the question, just reformulate it if needed and otherwise return it as is."""
 
-SYSTEM_PROMPT="""You are helpful assistant, helping the use nswer questions about Microsoft technologies. \
+SYSTEM_PROMPT="""You are helpful assistant, helping the use answer questions about Microsoft technologies. \
     You answer questions about Azure, Microsoft 365, Dynamics 365, Power Platform, Azure, Microsoft Fabric and other Microsoft technologies \
         Do not use your internal knowledge, but only provided context in the prompt. \
         Do not answer not related to Microsoft technologies questions. \
