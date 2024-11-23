@@ -1,12 +1,5 @@
-import os
-import atexit
-from dotenv import load_dotenv
-# Load environment variables from .env file
-load_dotenv()
-
-from langchain_community.vectorstores.azuresearch import AzureSearch
-from langchain_community.retrievers import AzureAISearchRetriever
-from langchain_openai import AzureOpenAIEmbeddings
+from utils.utils import configure_logging
+from opentelemetry import trace
 from azure.search.documents.indexes.models import (
     ScoringProfile,
     SearchableField,
@@ -15,21 +8,30 @@ from azure.search.documents.indexes.models import (
     SimpleField,
     TextWeights,
 )
-from opentelemetry import trace
-from utils.utils import configure_logging
+from langchain_openai import AzureOpenAIEmbeddings
+from langchain_community.retrievers import AzureAISearchRetriever
+from langchain_community.vectorstores.azuresearch import AzureSearch
+import os
+import atexit
+from dotenv import load_dotenv
+# Load environment variables from .env file
+load_dotenv()
+
 
 logger = configure_logging()
 tracer = trace.get_tracer(__name__)
 
 # Azure Search configuration
-AZURE_AI_SEARCH_SERVICE_ENDPOINT = os.getenv("AZURE_AI_SEARCH_SERVICE_ENDPOINT")
+AZURE_AI_SEARCH_SERVICE_ENDPOINT = os.getenv(
+    "AZURE_AI_SEARCH_SERVICE_ENDPOINT")
 AZURE_AI_SEARCH_API_KEY = os.getenv("AZURE_AI_SEARCH_API_KEY")
 AZURE_AI_SEARCH_INDEX_NAME = os.getenv("AZURE_AI_SEARCH_INDEX_NAME")
 AZURE_AI_SEARCH_SERVICE_NAME = os.getenv("AZURE_AI_SEARCH_SERVICE_NAME")
 
 # Azure OpenAI configuration
 AZURE_OPENAI_KEY = os.getenv("AZURE_OPENAI_KEY")
-AZURE_OPENAI_EMBEDDING_DEPLOYMENT = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT")
+AZURE_OPENAI_EMBEDDING_DEPLOYMENT = os.getenv(
+    "AZURE_OPENAI_EMBEDDING_DEPLOYMENT")
 AZURE_OPENAI_EMBEDDING_ENDPOINT = os.getenv("AZURE_OPENAI_EMBEDDING_ENDPOINT")
 AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION")
 
@@ -87,32 +89,37 @@ _fields = [
 
 # AISearch class to perform search operations
 class AISearch:
-    
-    #init method to initialize the class
+
+    # init method to initialize the class
     def __init__(self) -> None:
-        
+
         logger.info("AISearch.Initializing Azure Search client.")
         # Create Langchain AzureSearch object
         self._vector_search = AzureSearch(
-        azure_search_endpoint=AZURE_AI_SEARCH_SERVICE_ENDPOINT,
-        azure_search_key=AZURE_AI_SEARCH_API_KEY,
-        index_name=AZURE_AI_SEARCH_INDEX_NAME,
-        embedding_function=_embeddings.embed_query,
-        additional_search_client_options={"retry_total": 3},
-        fields=_fields,
+            azure_search_endpoint=AZURE_AI_SEARCH_SERVICE_ENDPOINT,
+            azure_search_key=AZURE_AI_SEARCH_API_KEY,
+            index_name=AZURE_AI_SEARCH_INDEX_NAME,
+            embedding_function=_embeddings.embed_query,
+            search_type="hybrid",
+            semantic_configuration_name="vector-1729431147052-semantic-configuration",
+            additional_search_client_options={"retry_total": 3, "logging_enable":True, "logger":logger},
+            fields=_fields,
         )
-        self._retriever = AzureAISearchRetriever(content_key="chunk", top_k=3, index_name=AZURE_AI_SEARCH_INDEX_NAME)
+        # Create retriever object
+        #supported search types: "semantic_hybrid", "similarity" (default) , "hybryd"
+        self._retriever = self._vector_search.as_retriever(search_type="semantic_hybrid")
+               
         atexit.register(self.__close__)
 
-    def __close__(self)-> None:
+    def __close__(self) -> None:
         """
         Close the Azure Search client.
         """
-        print("Closing Azure Search client.")   
-          
+        print("Closing Azure Search client.")
+
     def retriever(self) -> AzureAISearchRetriever:
         return self._retriever
-        
+
     def ingest(self, documents: list, metadata: list) -> None:
         """
         Ingest documents into Azure Search.
@@ -126,12 +133,13 @@ class AISearch:
         if not isinstance(metadata, list) or not metadata:
             raise ValueError("Metadata must be a non-empty list")
         if len(documents) != len(metadata):
-            raise ValueError("Documents and metadata must be of the same length")
-        
+            raise ValueError(
+                "Documents and metadata must be of the same length")
+
         self._vector_search.add_documents(documents, metadata)
 
-    #TODO: Add thresholds and output score
-    def search(self, query: str, search_type: str = 'similarity', top_k: int = 5) -> str:
+    # TODO: Add thresholds and output score
+    def search(self, query: str, search_type: str = 'hybrid', top_k: int = 5) -> str:
         """
         Search for similar documents in Azure Search.
 
@@ -141,22 +149,39 @@ class AISearch:
         :return: Content of the top search result.
         :raises ValueError: If input is invalid.
         """
-        logger.info(f"Search: Searching for similar documents using query: {query}")
-        with tracer.start_as_current_span("aisearch"):
+        logger.info(
+            f"Search: Searching for similar documents using query: {query}")
+        with tracer.start_as_current_span("aisearch") as aisearch_span:
             if not isinstance(query, str) or not query:
                 raise ValueError("Search query must be a non-empty string")
-        
-            docs = self._vector_search.similarity_search (query=query, k=top_k, search_type=search_type)
-            return docs[0].page_content
-
+            aisearch_span.set_attribute("ai_search_query:", query)
+            
+            docs = self._vector_search.similarity_search(
+                query=query, k=top_k, search_type=search_type)
+            
+            # run in loop on the list of documents take the content for each document in page_content and concatenate them. put tab between content of each document
+            # return the concatenated content
+            # each document in the list is: langchain_core.documents.base.Document
+            final_content = ""
+            for doc in docs:
+                final_content += doc.page_content + "\t"
+            return final_content
 
 if __name__ == "__main__":
     try:
         aisearch = AISearch()
-        docs = aisearch.search("What Microsoft Fabric", search_type='hybrid', top_k=3)
-        #print(docs)
-        docs_retr = aisearch.retriever().invoke("What is Microsoft Azure?")
-        print(docs_retr)
+        content = aisearch.search("What Microsoft Fabric",
+                               search_type='hybrid', top_k=3)
+        print("Content:>>>> ", content)
+     
+        """
+        docs_retr = aisearch.retriever().invoke("What is Microsoft Fabric?")
+        content = ""
+        for doc in docs_retr:
+            content += doc.page_content + "###"
+            
+        print("Content:>>>> ", content)
+        """   
     except Exception as e:
         logger.error(f"Error during search: {e}")
     finally:
