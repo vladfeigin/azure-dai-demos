@@ -107,7 +107,7 @@ class AISearch:
         )
         # Create retriever object
         #supported search types: "semantic_hybrid", "similarity" (default) , "hybryd"
-        self._retriever = self._vector_search.as_retriever(search_type="semantic_hybrid")
+        self._retriever = self._vector_search.as_retriever(search_type="hybrid")
                
         atexit.register(self.__close__)
 
