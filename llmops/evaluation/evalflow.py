@@ -103,21 +103,26 @@ def eval_batch(batch_output: pd.DataFrame, dump_output: bool = False):
     
     scores = {key: [] for key in evaluator_funcs.keys()}
 
-    for _, row in batch_output.iterrows():
-        new_row = row.to_dict()
+    try:
+        for _, row in batch_output.iterrows():
+            new_row = row.to_dict()
 
-        # Calculate scores and append to new_row and scores dictionary
-        for eval_name, func in evaluator_funcs.items():
-            score = func(row)
-            new_row[eval_name] = score
-            scores[eval_name].append(score)
+            # Calculate scores and append to new_row and scores dictionary
+            for eval_name, func in evaluator_funcs.items():
+                score = func(row)
+                new_row[eval_name] = score
+                scores[eval_name].append(score)
 
-        # Append to result DataFrame
-        eval_res = pd.concat([eval_res, pd.DataFrame([new_row])], ignore_index=True)
+            # Append to result DataFrame
+            eval_res = pd.concat([eval_res, pd.DataFrame([new_row])], ignore_index=True)
 
-    # Calculate overall average scores
-    eval_metrics = calculate_overall_score(scores)
-
+        # Calculate overall average scores
+        eval_metrics = calculate_overall_score(scores)
+    except Exception as e:
+        logger.exception(f"An error occurred during batch evaluation: {e}")
+        print("EXCEPTION in Evaluaitons: ", e)
+        raise e
+      
     # Optional: Dump results to files
     if dump_output:
         timestamp = pd.Timestamp.now().strftime("%Y%m%d%H%M%S")

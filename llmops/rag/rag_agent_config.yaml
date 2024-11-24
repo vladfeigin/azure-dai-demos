@@ -1,10 +1,15 @@
 # yaml-language-server: $schema=../schemas/rag_agent_config_schema.yaml
 AgentConfiguration:
+  config_version: 1.0
   agent_name: "rag_agent"
   model_name: "gpt-4o"
   model_version: "2024-05-13"
   model_deployment: "gpt-4o-2"
+  model_deployment_endpoint: "https://openai-australia-east-303474.openai.azure.com/openai/deployments/gpt-4o-2/chat/completions?api-version=2024-08-01-preview"
   openai_api_version: "2024-08-01-preview"
+  retrieval: 
+      search_type: "semantic_hybrid"
+      top_k: 5
   model_parameters:
     temperature: 0.0
     seed: 42
@@ -27,6 +32,8 @@ AgentConfiguration:
         </context>"
 
   human_template: "question: {input}"
-  application_name: "rag_llmops_workshop"
-  config_version: "1.0"
-  application_version: "1.0"
+  #this parameter is deprecated in next version
+  application_version: "1.0"   #- this parameter must be on application level configuration
+  #this parameter is deprecated in next version
+  application_name: "rag_llmops_workshop" #- this parameter must be on application level configuration
+  
