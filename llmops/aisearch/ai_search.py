@@ -17,8 +17,9 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-
-logger = configure_logging()
+from logging import INFO, getLogger
+# Logging calls with this logger will be tracked
+logger = getLogger(__name__)
 tracer = trace.get_tracer(__name__)
 
 # Azure Search configuration
@@ -27,6 +28,7 @@ AZURE_AI_SEARCH_SERVICE_ENDPOINT = os.getenv(
 AZURE_AI_SEARCH_API_KEY = os.getenv("AZURE_AI_SEARCH_API_KEY")
 AZURE_AI_SEARCH_INDEX_NAME = os.getenv("AZURE_AI_SEARCH_INDEX_NAME")
 AZURE_AI_SEARCH_SERVICE_NAME = os.getenv("AZURE_AI_SEARCH_SERVICE_NAME")
+INDEX_SEMANTIC_CONFIGURATION_NAME = os.getenv("INDEX_SEMANTIC_CONFIGURATION_NAME")
 
 # Azure OpenAI configuration
 AZURE_OPENAI_KEY = os.getenv("AZURE_OPENAI_KEY")
@@ -91,25 +93,35 @@ _fields = [
 class AISearch:
 
     # init method to initialize the class
-    def __init__(self) -> None:
+    def __init__(self, search_type:str, top_k:int) -> None:
 
         logger.info("AISearch.Initializing Azure Search client.")
-        # Create Langchain AzureSearch object
-        self._vector_search = AzureSearch(
-            azure_search_endpoint=AZURE_AI_SEARCH_SERVICE_ENDPOINT,
-            azure_search_key=AZURE_AI_SEARCH_API_KEY,
-            index_name=AZURE_AI_SEARCH_INDEX_NAME,
-            embedding_function=_embeddings.embed_query,
-            search_type="hybrid",
-            semantic_configuration_name="vector-1729431147052-semantic-configuration",
-            additional_search_client_options={"retry_total": 3, "logging_enable":True, "logger":logger},
-            fields=_fields,
-        )
-        # Create retriever object
-        #supported search types: "semantic_hybrid", "similarity" (default) , "hybryd"
-        self._retriever = self._vector_search.as_retriever(search_type="hybrid")
-               
-        atexit.register(self.__close__)
+        self._search_type = search_type
+        self._top_k = top_k
+        
+        logger.info(f"Search type: {search_type}")
+        logger.info(f"Top K: {top_k}")
+        logger.info(f"ai search index name : {AZURE_AI_SEARCH_INDEX_NAME}")
+        
+        try:
+            # Create Langchain AzureSearch object
+            self._vector_search = AzureSearch(
+                azure_search_endpoint=AZURE_AI_SEARCH_SERVICE_ENDPOINT,
+                azure_search_key=AZURE_AI_SEARCH_API_KEY,
+                index_name=AZURE_AI_SEARCH_INDEX_NAME,
+                embedding_function=_embeddings.embed_query,
+                search_type=search_type,
+                semantic_configuration_name=INDEX_SEMANTIC_CONFIGURATION_NAME,
+                additional_search_client_options={"retry_total": 3, "logging_enable":True, "logger":logger},
+                fields=_fields,
+            )
+            # Create retriever object
+            #supported search types: "semantic_hybrid", "similarity" (default) , "hybryd"
+            self._retriever = self._vector_search.as_retriever(search_type=search_type, k=top_k)    
+            atexit.register(self.__close__)
+        except Exception as e:
+            logger.error(f"Error during ai search index initialization: {e}")
+            raise Exception(f"Error during ai search index initialization: {e}")
 
     def __close__(self) -> None:
         """
