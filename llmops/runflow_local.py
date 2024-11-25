@@ -20,23 +20,14 @@ data = "./rag/data.jsonl"  # Path to the data file for batch evaluation
 
 # this function is used to run the RAG flow for batch evaluation
 
+start_trace()
 
 def rag_flow(session_id: str, question: str = " ") -> str:
-    with tracer.start_as_current_span("batch::evaluation::rag_flow"):
-        rag = RAG(os.getenv("AZURE_OPENAI_KEY"))
-        return rag(session_id, question)
-
-# this function serves for running: pf flow serve --source ./ --port 8080 --host localhost for running chat UI in browser
-
-
-def rag_flow_test_web(session_id: str, question: str = " ") -> str:
-    start_trace()
-    with tracer.start_as_current_span("rag_flow_web_ui") as span:
+    with tracer.start_as_current_span("flow::evaluation::rag_flow") as span:
         rag = RAG(os.getenv("AZURE_OPENAI_KEY"))
         return rag(session_id, question)
 
 # run the flow
-
 
 def runflow(dump_output: bool = False) -> Tuple[Run, pd.DataFrame]:
     logger.info("Running the flow for batch.")

@@ -238,7 +238,7 @@ def configure_tracing(collection_name: str = "llmops-workshop", enable_console_e
 
 
 def configure_logging():
-    logger = logging.getLogger()
+    logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
 
     # to avoid duplicate logging, check the logger has no handlers

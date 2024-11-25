@@ -5,7 +5,7 @@ from logging import INFO, getLogger
 # Logging calls with this logger will be tracked
 logger = getLogger(__name__)
 
-class SessionSroreAbstract(ABC):
+class SessionStoreAbstract(ABC):
     def __init__(self):
         logger.info("SessionStore.Initializing SessionStore")
         self._sessions = {}
@@ -28,7 +28,8 @@ class SessionSroreAbstract(ABC):
 
     def clear(self):
         self._sessions.clear()
-
+    
+  
     def __len__(self):
         return len(self._sessions)
 
@@ -55,8 +56,12 @@ class SessionSroreAbstract(ABC):
     
     
 from langchain_community.chat_message_histories import ChatMessageHistory
+from typing import List
+from langchain_core.messages import BaseMessage
 
-class SimpleSessionStore(SessionSroreAbstract):
+#simple in memory session store. The messages are kept as a list in memory
+#for production use persistent implemenation like : RedisChatMessageHistory
+class SimpleInMemorySessionStore(SessionStoreAbstract):
     
     def create_session(self, session_id)-> object:
         #check if session_id is provided otherwise raise an exception
@@ -66,4 +71,6 @@ class SimpleSessionStore(SessionSroreAbstract):
         session = ChatMessageHistory()
         self._sessions[session_id] = session
         return session
+    
+   
         
