@@ -2,7 +2,7 @@
 
 ## Overview
 
-The **Fabric** is a Microsoft SaaS platform it'sa  solution to enhance data observability, experimentation, and troubleshooting. It provides:
+The **Fabric** is a Microsoft SaaS platform it's a solution to enhance data observability and troubleshooting . It provides:
 
 - **Tracing**: Trace your application's runtime and data pipelines using advanced telemetry-based instrumentation integrated with Microsoft Fabric's tools.
 - **Evaluation**: Leverage built-in analytics and AI capabilities to benchmark application performance using custom evaluations and metrics, enabling deeper insights into system performance.
@@ -11,38 +11,30 @@ The **Fabric** is a Microsoft SaaS platform it'sa  solution to enhance data obse
 Fabric seamlessly integrates with Microsoft’s ecosystem, offering a comprehensive suite of tools such as Real-Time Analytics, Data Activator for alerting, and KQL Queryset for advanced querying. 
 It provides robust features for organizations looking to build, deploy, and monitor secure and scalable solutions, all within a unified platform.
 
----
-
-## What
-
-This tool provides:
-
-- **REST APIs** for managing deployments programmatically.
-- **Containerized Environment** for easy scalability and deployment.
-- **Dynamic Configuration Management** to streamline multi-tenant deployments.
-- **Azure Managed Identity Integration** for secure authentication and access control.
-
-### Key Features
-
-- **Scalable Deployments**: Handles large-scale deployment needs.
-- **Customizable Configurations**: Uses `appsettings.json` for tenant-specific setups.
-- **Secure Authentication**: Integrates with Azure Managed Identities for secure and compliant operations.
+## Fabric Observability solution Architecture
 
 ![GitHub & DeploymentHub](./img/fabric_observability_architecture.png)
----
 
-## How
+This solution contains:
+
+[!div class="checklist"]
+
+Get data in the Real-Time hub
+Store date into Eventhouse
+Split data usin table update policy
+Create a KQL query
+Create a Real-Time dashboard
+Explore data visually in the Real-Time dashboard
+Set an alert on the eventstream or Real-Time dashboard
+
+
+## End to end tutorial
 
 ### Prerequisites
 
-- .NET 8.0 SDK
-- Docker (for local containerization)
-- Azure Subscription with Container Apps enabled
-- Configuration values for:
-  - `FABRIC_TENANT_CONFIG`
-  - `AZURE_TENANT_ID`
-  - `FABRIC_API_CLIENT_ID`
-  - `FABRIC_API_CLIENT_SECRET`
+To successfully complete this tutorial, you need : 
+
+[workspace](../get-started/create-workspaces.md) with a Microsoft Fabric-enabled [capacity](../enterprise/licenses.md#capacity) or Microsoft Fabric [trial capacity](../get-started/fabric-trial.md). 
 
 ### Installation
 
