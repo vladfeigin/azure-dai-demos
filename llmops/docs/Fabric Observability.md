@@ -47,7 +47,83 @@ To successfully complete this tutorial, you need :
   Documentation  [Create an eventhouse documentation](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/create-eventhouse)
 
 
+### Ingest, capture and route event to Eventhouse
 
+- **Create an eventstream**
+
+1. Select **Real-Time** on the left navigation bar.
+1. Select **+ Connect data source** in the top-right corner of the page. 
+
+    :::image type="content" source="img/connect-data-source.png" alt-text="Screenshot of Real-time hub with get events highlighted." lightbox="img/connect-data-source.png":::
+1. On the **Data sources** page, select **Azure Event Hubs** category.
+
+    :::image type="content" source="img/select-source.png" alt-text="Screenshot of Data sources page." lightbox="img/select-source.png":::    
+1. On the **Connect** page, create **New connections**, in the opened window, do these steps:
+  1. Enter the name of the Event Hubs namespace.
+  1. Enter the name of the event hub.
+  1. For Connection name, enter a name for the connection to the event hub.
+  1. For Authentication kind, confirm that Shared Access Key is selected.
+  1. For Shared Access Key Name, enter the name of the shared access key.
+  1. For Shared Access Key, enter the value of the shared access key.
+  1. Select Connect at the bottom of the page.
+
+    :::image type="content" source="img/connect-source.png" alt-text="Screenshot of Connect data source wizard with a source name." lightbox="img/connect-source.png":::    
+
+1. After the connection and the eventstream are created successfully, you see the following updated **Review + connect** page.
+
+    :::image type="content" source="img/review-connect-success.png" alt-text="Screenshot of Review + connect page after the successful creation of an eventstream." lightbox="img/review-connect-success.png":::         
+
+1. Select **Open Eventstream**.
+
+- **Create a destination**
+         
+1. From the menu ribbon, select **Edit**. The authoring canvas, which is the center section, turns yellow and becomes active for changes.
+
+    :::image type="content" source="img/event-stream-edit-button.png" alt-text="Screenshot with the Edit button selected." lightbox="img/event-stream-edit-button.png":::         
+
+1. Select Publish on the ribbon.
+
+    :::image type="content" source="img/publish.png" alt-text="Screenshot showing the green plus icon selected.":::    
+
+1. In Edit Mode select **Destinations** > **Eventhouse**.
+    
+    :::image type="content" source="img/event-house-selected.png" alt-text="Screenshot showing the Eventhouse destination selected.":::    
+
+1. Enter the following information in the **Eventhouse** pane:
+
+    :::image type="content" source="img/kql-database-details.png" alt-text="Screenshot showing the Eventhouse destination pane in Real-Time Intelligence.":::
+
+1. Ensure that the box **Activate ingestion after adding the data** is checked.
+1. Select **Save**.
+1. From the menu ribbon, select **Publish**.
+
+   The eventstream is now set up to transform events and send them to a KQL database.
+
+**Related content**
+
+* [Create an eventstream](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/add-source-azure-event-hubs?pivots=enhanced-capabilities)
+* [Add a KQL database as a destination](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/add-destination-kql-database?pivots=enhanced-capabilities)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Split data usin table update policy
 
 
 
