@@ -51,7 +51,7 @@ To successfully complete this tutorial, you need :
 
 
 
-### Ingest, capture and route event to Eventhouse
+### Ingest, capture and route events to Eventhouse
 
 - **Create an eventstream**
 
@@ -89,9 +89,7 @@ From the menu ribbon, select **Edit**. The authoring canvas, which is the center
 
 Select Publish on the ribbon.
 
-![](img/publish.png)    
-
-In Edit Mode select **Destinations** > **Eventhouse**.
+In **Edit** Mode select **Destinations** > **Eventhouse**.
     
 ![](img/event-house-selected.png) 
 
