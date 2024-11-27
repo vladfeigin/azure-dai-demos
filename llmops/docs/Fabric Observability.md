@@ -1,4 +1,4 @@
-# Fabric Deployment Hub
+# Fabric AI Observability & Evaluation
 
 ## Overview
 
@@ -28,7 +28,7 @@ This tool provides:
 - **Customizable Configurations**: Uses `appsettings.json` for tenant-specific setups.
 - **Secure Authentication**: Integrates with Azure Managed Identities for secure and compliant operations.
 
-![GitHub & DeploymentHub](./images/github-deploymenthub.png)
+![GitHub & DeploymentHub](./llmops/docs/img/fabric_observability_architecture.png)
 ---
 
 ## How
