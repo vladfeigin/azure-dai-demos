@@ -17,30 +17,40 @@ It provides robust features for organizations looking to build, deploy, and moni
 
 This solution contains:
 
-[!div class="checklist"]
+- Get data in the Real-Time hub
+- Store date into Eventhouse
+- Split data usin table update policy
+- Create a KQL query
+- Create a Real-Time dashboard
+- Explore data visually in the Real-Time dashboard
+- Set an alert on the eventstream or Real-Time dashboard
 
-Get data in the Real-Time hub
-Store date into Eventhouse
-Split data usin table update policy
-Create a KQL query
-Create a Real-Time dashboard
-Explore data visually in the Real-Time dashboard
-Set an alert on the eventstream or Real-Time dashboard
-
-
+  
 ## End to end tutorial
 
 ### Prerequisites
 
 To successfully complete this tutorial, you need : 
 
-[workspace](../get-started/create-workspaces.md) with a Microsoft Fabric-enabled [capacity](../enterprise/licenses.md#capacity) or Microsoft Fabric [trial capacity](../get-started/fabric-trial.md). 
+- **Microsoft Fabric** [workspace](https://learn.microsoft.com/en-us/fabric/get-started/create-workspaces) with enabled [capacity](https://learn.microsoft.com/en-us/fabric/enterprise/licenses) or [trial capacity](https://learn.microsoft.com/en-us/fabric/get-started/fabric-trial). 
+- **Azure Event Hubs** Stream to event hub collected traces, evaluation metrics and logs. [Stream to an event hub](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/create-diagnostic-settings?tabs=portal). 
 
-### Installation
+
+### Create an eventhouse
+
+1. Browse to the workspace in which you want to create your tutorial resources. You must create all resources in the same workspace.
+1. Select **+ New item**.
+1. In the **Filter by item type** search box, enter **Eventhouse**.
+1. Select the Eventhouse item.
+1. Enter *Tutorial* as the eventhouse name. A KQL database is created simultaneously with the same name.
+1. Select **Create**. When provisioning is complete, the eventhouse **System overview** page is shown.
+
+Documentation  [Create an eventhouse documentation](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/create-eventhouse)
 
 1. Clone the repository:
    ```bash
    git clone https://github.com/your-repository/fabric-deployment-hub.git
+
 2.	Navigate to the project directory:
     ```bash
     cd fabric-deployment-hub
