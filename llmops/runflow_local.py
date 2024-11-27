@@ -15,7 +15,6 @@ tracing_collection_name = "rag_llmops"
 logger = configure_logging()
 tracer = configure_tracing(collection_name=tracing_collection_name)
 
-flow = "."  # Path to the flow directory
 data = "./rag/data.jsonl"  # Path to the data file for batch evaluation
 
 # this function is used to run the RAG flow for batch evaluation
