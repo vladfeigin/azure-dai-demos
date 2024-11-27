@@ -60,9 +60,9 @@ To successfully complete this tutorial, you need :
                 TotalTokens:long,PromptTokens:long,CompletionTokens:long,Duration:long,IsSameAsPreviousIntentSystemPrompt:string,
                 IsSameAsPreviousChatSystemPrompt:string,Coherence:real,Groundedness:real,Relevance:real,Similarity:real,
                 IntentSystemPrompt:string,ChatSystemPrompt:string,Temperature:string,Seed:long)
-  ```
+   ```  
 
-2. Create a Query:
+2. Create a query:
    ```bash 
       .create-or-alter function RunFlowInsert() {
       let AppTracesTbl = 
