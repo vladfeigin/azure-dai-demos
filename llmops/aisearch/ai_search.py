@@ -110,7 +110,7 @@ class AISearch:
                 azure_search_key=AZURE_AI_SEARCH_API_KEY,
                 index_name=AZURE_AI_SEARCH_INDEX_NAME,
                 embedding_function=_embeddings.embed_query,
-                search_type=search_type,
+                #search_type=search_type,
                 semantic_configuration_name=INDEX_SEMANTIC_CONFIGURATION_NAME,
                 additional_search_client_options={"retry_total": 3, "logging_enable":True, "logger":logger},
                 fields=_fields,
