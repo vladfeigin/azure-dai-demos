@@ -58,7 +58,7 @@ To successfully complete this tutorial, you need :
 
 1. On the **Data sources** page, select **Azure Event Hubs** category.
 
-![](/img/select-source.png)
+![](./img/select-source.png)
    
 1. On the **Connect** page, create **New connections**, in the opened window, do these steps:
   - Enter the name of the Event Hubs namespace.
@@ -81,19 +81,19 @@ To successfully complete this tutorial, you need :
          
 1. From the menu ribbon, select **Edit**. The authoring canvas, which is the center section, turns yellow and becomes active for changes.
 
-    :::image type="content" source="img/event-stream-edit-button.png" alt-text="Screenshot with the Edit button selected." lightbox="img/event-stream-edit-button.png":::         
+![](img/event-stream-edit-button.png)      
 
 1. Select Publish on the ribbon.
 
-    :::image type="content" source="img/publish.png" alt-text="Screenshot showing the green plus icon selected.":::    
+![](img/publish.png)    
 
 1. In Edit Mode select **Destinations** > **Eventhouse**.
     
-    :::image type="content" source="img/event-house-selected.png" alt-text="Screenshot showing the Eventhouse destination selected.":::    
+![](img/event-house-selected.png) 
 
 1. Enter the following information in the **Eventhouse** pane:
 
-    :::image type="content" source="img/kql-database-details.png" alt-text="Screenshot showing the Eventhouse destination pane in Real-Time Intelligence.":::
+![](img/kql-database-details.png) 
 
 1. Ensure that the box **Activate ingestion after adding the data** is checked.
 1. Select **Save**.
