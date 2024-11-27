@@ -54,11 +54,11 @@ To successfully complete this tutorial, you need :
 1. Select **Real-Time** on the left navigation bar.
 1. Select **+ Connect data source** in the top-right corner of the page. 
 
-![](/img/connect-data-source.png)
+![](./img/connect-data-source.png)
 
 1. On the **Data sources** page, select **Azure Event Hubs** category.
 
-![](/img/select-source.png)
+![2](/img/select-source.png)
    
 1. On the **Connect** page, create **New connections**, in the opened window, do these steps:
   - Enter the name of the Event Hubs namespace.
