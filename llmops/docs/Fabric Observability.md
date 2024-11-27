@@ -58,7 +58,7 @@ To successfully complete this tutorial, you need :
 
 1. On the **Data sources** page, select **Azure Event Hubs** category.
 
-![2](/img/select-source.png)
+![](/img/select-source.png)
    
 1. On the **Connect** page, create **New connections**, in the opened window, do these steps:
   - Enter the name of the Event Hubs namespace.
