@@ -51,16 +51,16 @@ To successfully complete this tutorial, you need :
 
 - **Create an eventstream**
 
-1. Select **Real-Time** on the left navigation bar.
-1. Select **+ Connect data source** in the top-right corner of the page. 
+Select **Real-Time** on the left navigation bar.
+Select **+ Connect data source** in the top-right corner of the page. 
 
 ![](./img/connect-data-source.png)
 
-1. On the **Data sources** page, select **Azure Event Hubs** category.
+On the **Data sources** page, select **Azure Event Hubs** category.
 
-![](./img/select-source.png)
+![](/img/select-source.png)
    
-1. On the **Connect** page, create **New connections**, in the opened window, do these steps:
+On the **Connect** page, create **New connections**, in the opened window, do these steps:
   - Enter the name of the Event Hubs namespace.
   - Enter the name of the event hub.
   - For Connection name, enter a name for the connection to the event hub.
@@ -71,33 +71,33 @@ To successfully complete this tutorial, you need :
 
 ![](img/connect-source.png)   
 
-1. After the connection and the eventstream are created successfully, you see the following updated **Review + connect** page.
+After the connection and the eventstream are created successfully, you see the following updated **Review + connect** page.
       
 ![](img/review-connect-success.png)   
 
-1. Select **Open Eventstream**.
+Select **Open Eventstream**.
 
 - **Create a destination**
          
-1. From the menu ribbon, select **Edit**. The authoring canvas, which is the center section, turns yellow and becomes active for changes.
+From the menu ribbon, select **Edit**. The authoring canvas, which is the center section, turns yellow and becomes active for changes.
 
 ![](img/event-stream-edit-button.png)      
 
-1. Select Publish on the ribbon.
+Select Publish on the ribbon.
 
 ![](img/publish.png)    
 
-1. In Edit Mode select **Destinations** > **Eventhouse**.
+In Edit Mode select **Destinations** > **Eventhouse**.
     
 ![](img/event-house-selected.png) 
 
-1. Enter the following information in the **Eventhouse** pane:
+Enter the following information in the **Eventhouse** pane:
 
 ![](img/kql-database-details.png) 
 
-1. Ensure that the box **Activate ingestion after adding the data** is checked.
-1. Select **Save**.
-1. From the menu ribbon, select **Publish**.
+Ensure that the box **Activate ingestion after adding the data** is checked.
+Select **Save**.
+From the menu ribbon, select **Publish**.
 
    The eventstream is now set up to transform events and send them to a KQL database.
 
