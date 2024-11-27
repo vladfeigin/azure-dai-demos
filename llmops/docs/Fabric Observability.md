@@ -35,6 +35,7 @@ To successfully complete this tutorial, you need :
 - **Azure Event Hubs** Stream to event hub collected traces, evaluation metrics and logs. [Stream to an event hub](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/create-diagnostic-settings?tabs=portal). 
 
 
+
 ### Create an eventhouse
 
 1. Browse to the workspace in which you want to create your tutorial resources. You must create all resources in the same workspace.
@@ -44,7 +45,10 @@ To successfully complete this tutorial, you need :
 1. Enter *Tutorial* as the eventhouse name. A KQL database is created simultaneously with the same name.
 1. Select **Create**. When provisioning is complete, the eventhouse **System overview** page is shown.
 
-  Documentation  [Create an eventhouse documentation](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/create-eventhouse)
+**Related content**
+
+[Create an eventhouse documentation](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/create-eventhouse)
+
 
 
 ### Ingest, capture and route event to Eventhouse
@@ -106,34 +110,6 @@ From the menu ribbon, select **Publish**.
 * [Create an eventstream](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/add-source-azure-event-hubs?pivots=enhanced-capabilities)
 * [Add a KQL database as a destination](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/add-destination-kql-database?pivots=enhanced-capabilities)
 
-### Create a Real-Time dashboard from a KQL queryset
-
-Open an existing KQL queryset or create new.
-
-![](img/kql_queryset.png) 
-
-Write a query and Select Pin to dashboard.
-
-![](img/pin_to_deshboard.png) 
-
-**Related content**
-
-* [Create a Real-Time Dashboard](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/dashboard-real-time-create)
-* [Create a Real-Time Dashboard from Queryset](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/dashboard-real-time-create#add-tile-from-a-queryset)
-
-
-### Explore data visually in the Real-Time dashboard
-
-Monitoring is crucial to track system quality, detect anomalies, and provide developers with actionable feedback.
-Collecting traces for each component, user interaction, latency, and token usage.
-
-![](img/app_flow.png) 
-
-Analyze different evaluation metrics
-
-![](img/runflow.png) 
-
-* [Explore data in Real-Time Dashboard](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/dashboard-explore-data)
 
 
 ### Split data usin table update policy
@@ -201,3 +177,35 @@ Analyze different evaluation metrics
     .set-or-append RunFlow <|
     RunFlowInsert()
    ```  
+
+
+### Create a Real-Time dashboard from a KQL queryset
+
+Open an existing KQL queryset or create new.
+
+![](img/kql_queryset.png) 
+
+Write a query and Select Pin to dashboard.
+
+![](img/pin_to_deshboard.png) 
+
+**Related content**
+
+* [Create a Real-Time Dashboard](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/dashboard-real-time-create)
+* [Create a Real-Time Dashboard from Queryset](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/dashboard-real-time-create#add-tile-from-a-queryset)
+
+
+### Explore data visually in the Real-Time dashboard
+
+Monitoring is crucial to track system quality, detect anomalies, and provide developers with actionable feedback.
+Collecting traces for each component, user interaction, latency, and token usage.
+
+![](img/app_flow.png) 
+
+Analyze different evaluation metrics
+
+![](img/runflow.png) 
+
+**Related content**
+
+* [Explore data in Real-Time Dashboard](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/dashboard-explore-data)
