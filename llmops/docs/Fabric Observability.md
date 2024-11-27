@@ -55,11 +55,15 @@ To successfully complete this tutorial, you need :
 
 1. Create a target table:
    ```bash
-      .create table RunFlow (EventTime:datetime,item_OperationId:guid,item_ParentId:string,AppName:string,Variant:string,Deployment:string,OpenAIApiVersion:string,TotalTokens:long,PromptTokens:long,CompletionTokens:long,Duration:long,IsSameAsPreviousIntentSystemPrompt:string,IsSameAsPreviousChatSystemPrompt:string,Coherence:real,Groundedness:real,Relevance:real,Similarity:real,IntentSystemPrompt:string,ChatSystemPrompt:string,Temperature:string,Seed:long)
+      .create table 
+        RunFlow (EventTime:datetime,item_OperationId:guid,item_ParentId:string,AppName:string,Variant:string,Deployment:string,OpenAIApiVersion:string,
+                TotalTokens:long,PromptTokens:long,CompletionTokens:long,Duration:long,IsSameAsPreviousIntentSystemPrompt:string,
+                IsSameAsPreviousChatSystemPrompt:string,Coherence:real,Groundedness:real,Relevance:real,Similarity:real,
+                IntentSystemPrompt:string,ChatSystemPrompt:string,Temperature:string,Seed:long)
   ```
 
 2. Create a Query:
-   ```bash
+   ```bash 
       .create-or-alter function RunFlowInsert() {
       let AppTracesTbl = 
         ['ai-diagnostic-events']
@@ -100,7 +104,7 @@ To successfully complete this tutorial, you need :
         PromptTokens,CompletionTokens,Duration,IsSameAsPreviousIntentSystemPrompt,IsSameAsPreviousChatSystemPrompt,
         Coherence = coherence,Groundedness = groundedness,Relevance = relevance,Similarity = similarity,IntentSystemPrompt,ChatSystemPrompt,Temperature,Seed
       }
-  ```      
+   ```  
 
 3. Create a update policy:
    ```bash 
