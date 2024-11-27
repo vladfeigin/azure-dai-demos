@@ -13,7 +13,7 @@ It provides robust features for organizations looking to build, deploy, and moni
 
 ## Fabric Observability solution Architecture
 
-![GitHub & DeploymentHub](./img/fabric_observability_architecture.png)
+![Architecture](./img/fabric_observability_architecture.png)
 
 This solution contains:
 
@@ -54,24 +54,26 @@ To successfully complete this tutorial, you need :
 1. Select **Real-Time** on the left navigation bar.
 1. Select **+ Connect data source** in the top-right corner of the page. 
 
-    :::image type="content" source="img/connect-data-source.png" alt-text="Screenshot of Real-time hub with get events highlighted." lightbox="img/connect-data-source.png":::
+![](./img/connect-data-source.png)
+
 1. On the **Data sources** page, select **Azure Event Hubs** category.
 
-    :::image type="content" source="img/select-source.png" alt-text="Screenshot of Data sources page." lightbox="img/select-source.png":::    
+![](./img/select-source.png)
+   
 1. On the **Connect** page, create **New connections**, in the opened window, do these steps:
-  1. Enter the name of the Event Hubs namespace.
-  1. Enter the name of the event hub.
-  1. For Connection name, enter a name for the connection to the event hub.
-  1. For Authentication kind, confirm that Shared Access Key is selected.
-  1. For Shared Access Key Name, enter the name of the shared access key.
-  1. For Shared Access Key, enter the value of the shared access key.
-  1. Select Connect at the bottom of the page.
+  - Enter the name of the Event Hubs namespace.
+  - Enter the name of the event hub.
+  - For Connection name, enter a name for the connection to the event hub.
+  - For Authentication kind, confirm that Shared Access Key is selected.
+  - For Shared Access Key Name, enter the name of the shared access key.
+  - For Shared Access Key, enter the value of the shared access key.
+  - Select Connect at the bottom of the page.
 
-    :::image type="content" source="img/connect-source.png" alt-text="Screenshot of Connect data source wizard with a source name." lightbox="img/connect-source.png":::    
+![](.img/connect-source.png)   
 
 1. After the connection and the eventstream are created successfully, you see the following updated **Review + connect** page.
-
-    :::image type="content" source="img/review-connect-success.png" alt-text="Screenshot of Review + connect page after the successful creation of an eventstream." lightbox="img/review-connect-success.png":::         
+      
+![](.img/review-connect-success.png)   
 
 1. Select **Open Eventstream**.
 
