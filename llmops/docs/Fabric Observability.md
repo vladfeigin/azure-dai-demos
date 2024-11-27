@@ -17,9 +17,9 @@ It provides robust features for organizations looking to build, deploy, and moni
 
 This solution contains:
 
-- Get data in the **Real-Time hub**
-- Store date into **Eventhouse**
-- Split data usin table **update policy**
+- Ingest, capture and route real-time events using **Event Streams** 
+- Route events into **Eventhouse**
+- Split data using table **update policy**
 - Create a **KQL query**
 - Create a **Real-Time dashboard**
 - Explore data visually in the **Real-Time dashboard**
