@@ -28,7 +28,7 @@ This solution contains:
 ## End to end tutorial
 
 ### Prerequisites
----
+
 To successfully complete this tutorial, you need : 
 
 - **Microsoft Fabric** [workspace](https://learn.microsoft.com/en-us/fabric/get-started/create-workspaces) with enabled [capacity](https://learn.microsoft.com/en-us/fabric/enterprise/licenses) or [trial capacity](https://learn.microsoft.com/en-us/fabric/get-started/fabric-trial). 
@@ -45,7 +45,7 @@ To successfully complete this tutorial, you need :
 1. Select **Create**. When provisioning is complete, the eventhouse **System overview** page is shown.
 
   Documentation  [Create an eventhouse documentation](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/create-eventhouse)
----
+
 
 ### Ingest, capture and route event to Eventhouse
 
@@ -105,9 +105,8 @@ From the menu ribbon, select **Publish**.
 
 * [Create an eventstream](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/add-source-azure-event-hubs?pivots=enhanced-capabilities)
 * [Add a KQL database as a destination](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/add-destination-kql-database?pivots=enhanced-capabilities)
----
 
-### Create a **Real-Time dashboard from a KQL queryset
+### Create a Real-Time dashboard from a KQL queryset
 
 Open an existing KQL queryset or create new.
 
