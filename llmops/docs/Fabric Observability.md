@@ -28,7 +28,7 @@ This solution contains:
 ## End to end tutorial
 
 ### Prerequisites
-
+---
 To successfully complete this tutorial, you need : 
 
 - **Microsoft Fabric** [workspace](https://learn.microsoft.com/en-us/fabric/get-started/create-workspaces) with enabled [capacity](https://learn.microsoft.com/en-us/fabric/enterprise/licenses) or [trial capacity](https://learn.microsoft.com/en-us/fabric/get-started/fabric-trial). 
@@ -45,7 +45,7 @@ To successfully complete this tutorial, you need :
 1. Select **Create**. When provisioning is complete, the eventhouse **System overview** page is shown.
 
   Documentation  [Create an eventhouse documentation](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/create-eventhouse)
-
+---
 
 ### Ingest, capture and route event to Eventhouse
 
@@ -105,28 +105,36 @@ From the menu ribbon, select **Publish**.
 
 * [Create an eventstream](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/add-source-azure-event-hubs?pivots=enhanced-capabilities)
 * [Add a KQL database as a destination](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/add-destination-kql-database?pivots=enhanced-capabilities)
+---
+
+### Create a **Real-Time dashboard from a KQL queryset
+
+Open an existing KQL queryset or create new.
+
+![](img/kql_queryset.png) 
+
+Write a query and Select Pin to dashboard.
+
+![](img/pin_to_deshboard.png) 
+
+**Related content**
+
+* [Create a Real-Time Dashboard](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/dashboard-real-time-create)
+* [Create a Real-Time Dashboard from Queryset](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/dashboard-real-time-create#add-tile-from-a-queryset)
 
 
+### Explore data visually in the Real-Time dashboard
 
+Monitoring is crucial to track system quality, detect anomalies, and provide developers with actionable feedback.
+Collecting traces for each component, user interaction, latency, and token usage.
 
+![](img/app_flow.png) 
 
+Analyze different evaluation metrics
 
+![](img/runflow.png) 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-### Split data usin table update policy
-
+* [Explore data in Real-Time Dashboard](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/dashboard-explore-data)
 
 
 ### Split data usin table update policy
@@ -194,19 +202,3 @@ From the menu ribbon, select **Publish**.
     .set-or-append RunFlow <|
     RunFlowInsert()
    ```  
-
-### Create a KQL query
-
-
-
-1. Build the Docker image: `docker build -t fabric-deployment-hub .`
-2. Run the container: `docker run -p 5000:80 fabric-deployment-hub`
-
-### Deployment to Azure Container Apps
-
-1. Ensure containerapp-config.json is configured for your environment.
-2. Deploy the app using Azure CLI: `az containerapp up --source . --name fabric-deployment-hub --resource-group <your-resource-group>`
-
-## License
-
-This project is licensed under the terms of the MIT License.
