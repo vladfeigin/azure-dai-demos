@@ -54,11 +54,11 @@ To successfully complete this tutorial, you need :
 1. Select **Real-Time** on the left navigation bar.
 1. Select **+ Connect data source** in the top-right corner of the page. 
 
-![1](./img/connect-data-source.png)
+![](/img/connect-data-source.png)
 
 1. On the **Data sources** page, select **Azure Event Hubs** category.
 
-![2](./img/select-source.png)
+![](/img/select-source.png)
    
 1. On the **Connect** page, create **New connections**, in the opened window, do these steps:
   - Enter the name of the Event Hubs namespace.
@@ -69,11 +69,11 @@ To successfully complete this tutorial, you need :
   - For Shared Access Key, enter the value of the shared access key.
   - Select Connect at the bottom of the page.
 
-![3](.img/connect-source.png)   
+![](img/connect-source.png)   
 
 1. After the connection and the eventstream are created successfully, you see the following updated **Review + connect** page.
       
-![4](.img/review-connect-success.png)   
+![](img/review-connect-success.png)   
 
 1. Select **Open Eventstream**.
 
