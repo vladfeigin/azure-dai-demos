@@ -114,55 +114,95 @@ From the menu ribbon, select **Publish**.
 
 1. Create a target table:
    ```bash
-      .create table 
-        RunFlow (EventTime:datetime,item_OperationId:guid,item_ParentId:string,AppName:string,Variant:string,Deployment:string,OpenAIApiVersion:string,
-                TotalTokens:long,PromptTokens:long,CompletionTokens:long,Duration:long,IsSameAsPreviousIntentSystemPrompt:string,
-                IsSameAsPreviousChatSystemPrompt:string,Coherence:real,Groundedness:real,Relevance:real,Similarity:real,
-                IntentSystemPrompt:string,ChatSystemPrompt:string,Temperature:string,Seed:long)
+   .create table 
+    RunFlow (EventTime: datetime, item_OperationId: guid, item_ParentId: string, AgentName: string, ConfigVersion: string, ModelName: string, ModelVersion: string, ModelDeploymentName: string, OpenAIAPIVersion: string,Deployment: string, TotalTokens: long, PromptTokens: long, CompletionTokens: long, Duration: long, Temperature: string, Seed: long, SearchType: string, SearchTopK: long, IntentSystemPrompt: string, ChatSystemPrompt: string,Coherence: real, Groundedness: real, Relevance: real, Similarity: real, IsSameAsPreviousIntentSystemPrompt: string, IsSameAsPreviousChatSystemPrompt: string
+    )
    ```  
 
 2. Create a query:
    ```bash 
       .create-or-alter function RunFlowInsert() {
-      let AppTracesTbl = 
-        ['ai-diagnostic-events']
-          | extend item = parse_json(records)
-          | mv-expand item
-          | serialize
-          | extend RowNumber = row_number(1, prev(PartitionId) != PartitionId) 
-          | where item.Type == "AppTraces"
-          | project EventProcessedUtcTime, PartitionId, RowNumber, item, metricName = item.metricName, Target = item.Target, Type = item.Type, PropertiesPayload = dynamic_to_json(item.Properties.payload);
-      AppTracesTbl
-      | project item_time = todatetime((item)["time"]),  toguid(item.OperationId) , tostring(item.ParentId), Message = dynamic_to_json(item.Message)
-      | where Message has "batch-evaluation-flow-metrics"
-      | extend parsed_json = parse_json(Message)
-      | extend 
-              AppName = tostring(parsed_json.metadata.tags.run_configuraton.application_name),		
-              Variant = tostring(parsed_json.metadata.tags.run_configuraton.variant),
-              IntentSystemPrompt = tostring(parsed_json.metadata.tags.run_configuraton.intent_system_prompt),
-              ChatSystemPrompt = tostring(parsed_json.metadata.tags.run_configuraton.chat_system_prompt),
-              Deployment = tostring(parsed_json.metadata.tags.run_configuraton.llm_config.azure_deployment),
-              OpenAIApiVersion = tostring(parsed_json.metadata.tags.run_configuraton.llm_config.openai_api_version),
-              Temperature = tostring(parsed_json.metadata.tags.run_configuraton.llm_config.model_parameters.temperature),
-              Seed = tolong(parsed_json.metadata.tags.run_configuraton.llm_config.model_parameters.seed),
-              TotalTokens = tolong(parsed_json.metadata.properties.system_metrics.total_tokens),
-              PromptTokens = tolong(parsed_json.metadata.properties.system_metrics.prompt_tokens),
-              CompletionTokens = tolong(parsed_json.metadata.properties.system_metrics.completion_tokens),
-              Duration = tolong(parsed_json.metadata.properties.system_metrics.duration)
-      | where isnotempty(Variant)         
-      | mv-expand result = parsed_json.result
-      | extend metric = tostring(result.metric), score = toreal(result.score)
-      | project-away Message, parsed_json, result
-      | evaluate pivot(metric, any(score))
-      | sort by item_time asc
-      | extend PreviousIntentSystemPrompt = prev(IntentSystemPrompt)
-      | extend IsSameAsPreviousIntentSystemPrompt = iff(IntentSystemPrompt == PreviousIntentSystemPrompt or isempty(PreviousIntentSystemPrompt), "Yes", "No")
-      | extend PreviousChatSystemPrompt = prev(ChatSystemPrompt)
-      | extend IsSameAsPreviousChatSystemPrompt = iff(ChatSystemPrompt == PreviousChatSystemPrompt or isempty(PreviousChatSystemPrompt), "Yes", "No")
-      | project EventTime = item_time,item_OperationId,item_ParentId,AppName,Variant,Deployment,OpenAIApiVersion,TotalTokens,
-        PromptTokens,CompletionTokens,Duration,IsSameAsPreviousIntentSystemPrompt,IsSameAsPreviousChatSystemPrompt,
-        Coherence = coherence,Groundedness = groundedness,Relevance = relevance,Similarity = similarity,IntentSystemPrompt,ChatSystemPrompt,Temperature,Seed
-      }
+     let AppTracesTbl = 
+        traces_table
+        | extend item = parse_json(records)
+        | mv-expand item
+        | serialize
+        | extend RowNumber = row_number(1, prev(PartitionId) != PartitionId) 
+        | where item.Type == "AppTraces" 
+        | where todatetime(EventProcessedUtcTime) >= todatetime ("2024-11-29")
+        | project
+            EventProcessedUtcTime,
+            PartitionId,
+            RowNumber,
+            item,
+            metricName = item.metricName,
+            Target = item.Target,
+            Type = item.Type,
+            PropertiesPayload = dynamic_to_json(item.Properties.payload);
+     AppTracesTbl
+    | project
+        item_time = todatetime((item)["time"]),
+        toguid(item.OperationId),
+        tostring(item.ParentId),
+        Message = dynamic_to_json(item.Message)
+    | where Message has "batch-evaluation-flow-metrics"
+    | extend parsed_json = parse_json(Message)
+    | extend 
+        AgentName = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.agent_name),		
+        ConfigVersion = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.config_version),
+        ModelName = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.model_name),
+        ModelVersion = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.model_version),
+        ModelDeploymentName = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.model_deployment),
+        OpenAIAPIVersion = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.openai_api_version),
+        IntentSystemPrompt = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.intent_system_prompt),
+        ChatSystemPrompt = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.chat_system_prompt),
+        Deployment = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.model_deployment_endpoint),
+        Temperature = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.model_parameters.temperature),
+        Seed = tolong(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.model_parameters.seed),
+        SearchType = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.retrieval.search_type),
+        SearchTopK = tolong(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.retrieval.top_k),
+        TotalTokens = tolong(parsed_json.metadata.properties.system_metrics.total_tokens),
+        PromptTokens = tolong(parsed_json.metadata.properties.system_metrics.prompt_tokens),
+        CompletionTokens = tolong(parsed_json.metadata.properties.system_metrics.completion_tokens),
+        Duration = tolong(parsed_json.metadata.properties.system_metrics.duration)       
+    | where isnotempty(AgentName)         
+    | mv-expand result = parsed_json.result
+    | extend metric = tostring(result.metric), score = toreal(result.score)
+    | project-away Message, parsed_json, result
+    | evaluate pivot(metric, any(score))
+    | sort by item_time asc
+    | extend PreviousIntentSystemPrompt = prev(IntentSystemPrompt)
+    | extend IsSameAsPreviousIntentSystemPrompt = iff(IntentSystemPrompt == PreviousIntentSystemPrompt or isempty(PreviousIntentSystemPrompt), "Yes", "No")
+    | extend PreviousChatSystemPrompt = prev(ChatSystemPrompt)
+    | extend IsSameAsPreviousChatSystemPrompt = iff(ChatSystemPrompt == PreviousChatSystemPrompt or isempty(PreviousChatSystemPrompt), "Yes", "No")
+    | project
+        EventTime = item_time,
+        item_OperationId,
+        item_ParentId,
+        AgentName,
+        ConfigVersion,
+        ModelName,
+        ModelVersion,
+        ModelDeploymentName,
+        OpenAIAPIVersion,
+        Deployment,
+        TotalTokens,
+        PromptTokens,
+        CompletionTokens,
+        Duration,
+        Temperature,
+        Seed,
+        SearchType,
+        SearchTopK,
+        IntentSystemPrompt,
+        ChatSystemPrompt,
+        Coherence = coherence,
+        Groundedness = groundedness,
+        Relevance = relevance,
+        Similarity = similarity,
+        IsSameAsPreviousIntentSystemPrompt,
+        IsSameAsPreviousChatSystemPrompt
+  }
    ```  
 
 3. Create a update policy:
