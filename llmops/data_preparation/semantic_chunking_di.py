@@ -11,7 +11,7 @@ from azure.storage.blob import BlobServiceClient
 from typing import List
 from langchain_community.document_loaders import AzureAIDocumentIntelligenceLoader
 from langchain.text_splitter import MarkdownHeaderTextSplitter
-from langchain_community.vectorstores.azuresearch import AzureSearch
+#from langchain_community.vectorstores.azuresearch import AzureSearch
 from langchain_openai import AzureOpenAIEmbeddings
 from utils.utils import(configure_aoai_env,
                          configure_logging,
@@ -19,6 +19,10 @@ from utils.utils import(configure_aoai_env,
                          configure_docintell_env,
                          get_credential)
 
+from aisearch.ai_search import AISearch
+
+
+from io import BytesIO
 
 embedding_env = configure_embedding_env()
 aoai_env = configure_aoai_env()
@@ -29,6 +33,10 @@ aoai_embeddings = AzureOpenAIEmbeddings(
     api_key=aoai_env["api_key"], 
     openai_api_version=aoai_env["api_version"], 
 )
+
+#initialize the vector DB
+aisearch = AISearch()
+
 #test the embedding model
 #vector = aoai_embeddings.embed_query("What is the LLM?")
 #print(vector)
@@ -45,7 +53,7 @@ def process_document(doc_path, mode="markdown"):
                                                api_key = docintel_env["doc_intelligence_key"], 
                                                api_endpoint = docintel_env["doc_intelligence_endpoint"],
                                                api_model="prebuilt-layout",
-                                               api_version=docintel_env["doc_intellugence_api_version"],
+                                               api_version=docintel_env["doc_intelligence_api_version"],
                                                mode=mode)
     docs = loader.load()
     
@@ -89,9 +97,25 @@ def download_blob(storage_account_name: str, container_name: str, blob_name: str
         download_file.write(blob_client.download_blob().readall())
     print(f"Downloaded {blob_name} to {download_path}")
     
+def download_blob_to_memory(storage_account_name: str, container_name: str, blob_name: str):
+    """
+    Download a blob from Azure Blob Storage into memory.
+    """
+    credential = DefaultAzureCredential()
+    blob_service_client = BlobServiceClient(
+        account_url=f"https://{storage_account_name}.blob.core.windows.net",
+        credential=credential
+    )
+    blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
+    
+    blob_data = blob_client.download_blob().readall()
+    print(f"Downloaded {blob_name} into memory")
+    return BytesIO(blob_data)    
+    
+    
 #create a function getting a list of files from the blob storage and then it calculates path to the file and 
 # calls process_document function to process the document
-def process_files_from_blob_storage(storage_account_name: str, container_name: str, folder_name: str = None, mode: str = "markdown"):
+def ingest_files_from_blob(storage_account_name: str, container_name: str, folder_name: str = None, mode: str = "markdown"):
     """
     Download and process files from Azure Blob Storage.
     """
@@ -102,17 +126,43 @@ def process_files_from_blob_storage(storage_account_name: str, container_name: s
         print(f"Processing file: {local_path}")
         chunks = process_document(local_path, mode)
         print(f"Number of chunks: {len(chunks)}")
+        
+        aisearch.ingest(chunks)
         os.remove(local_path)  # Clean up the downloaded file
     return chunks
 
+#write a function which loads files from local folder and ingests them to the search index
+def ingest_files_from_local_folder(folder_path: str, mode: str = "markdown"):
+    """
+    Load and process files from a local folder.
+    """
+    files = os.listdir(folder_path)
+    for file in files:
+        local_path = os.path.join(folder_path, file)
+        print(f"Processing file: {local_path}")
+        chunks = process_document(local_path, mode)
+        print(f"Number of chunks: {len(chunks)}")
+        
+        aisearch.ingest(chunks)
+        os.remove(local_path)  # Clean up the downloaded file
+    return chunks
+
+
 if __name__ == "__main__":
-    #chinks = process_document("./data/hyde.pdf")
-    files = get_files_from_blob_storage("genaiworkshopstorage1", "docs", None)
-    print(files)
-    process_files_from_blob_storage("genaiworkshopstorage1", "docs", None)
+
+#Run this script to ingest files from blob storage or from local disk to the search index.
+#If you need a new index to be created, update .env file with a new ai search index name.
+# Run from command line: python semantic_chunking_di.py
+
+    #ingest file from blob storage to the search index
+    #chunks = ingest_files_from_blob("genaiworkshopstorage1", "docs", None)
+    #ingest file from local folder to the search index.
+    #
+    chunks = ingest_files_from_local_folder("../../../data")
+    
     
 
 
-                         
+                        
 
 

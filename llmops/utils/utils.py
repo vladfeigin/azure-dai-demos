@@ -155,7 +155,7 @@ def configure_docintell_env():
         return {
             "doc_intelligence_endpoint": os.environ.get("AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT"),
             "doc_intelligence_key": os.environ.get("AZURE_DOCUMENT_INTELLIGENCE_KEY"),
-            "doc_intellugence_api_version": os.environ.get("AZURE_DOCUMENT_INTELLIGENCE_API_VERSION"),
+            "doc_intelligence_api_version": os.environ.get("AZURE_DOCUMENT_INTELLIGENCE_API_VERSION"),
         }
 
     # Retrieve environment variables with default values or handle missing cases

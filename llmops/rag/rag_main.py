@@ -53,8 +53,10 @@ class RAG:
                 api_key=api_key
             )
             # init the AISearch class , enveloping the Azure Search retriever
-            self.aisearch = AISearch(self.rag_config["AgentConfiguration"]["retrieval"]
-                                     ["search_type"], self.rag_config["AgentConfiguration"]["retrieval"]["top_k"])
+            #self.aisearch = AISearch(self.rag_config["AgentConfiguration"]["retrieval"]
+            #                         ["search_type"], self.rag_config["AgentConfiguration"]["retrieval"]["top_k"])
+            self.aisearch = AISearch()
+        
             # initiate the session store
             self._session_store = SimpleInMemorySessionStore()
 
@@ -78,7 +80,9 @@ class RAG:
             # That search query is then passed to the retriever.
             self._history_aware_user_intent_retriever = \
                 create_history_aware_retriever(self.aimodel.llm(),
-                                               self.aisearch.retriever(),
+                                               self.aisearch.create_retriever(
+                                                    self.rag_config["AgentConfiguration"]["retrieval"]["search_type"],
+                                                    self.rag_config["AgentConfiguration"]["retrieval"]["top_k"]), 
                                                self._user_intent_prompt_template
                                                )
 

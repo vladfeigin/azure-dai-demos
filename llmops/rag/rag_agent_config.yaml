@@ -9,7 +9,7 @@ AgentConfiguration:
   openai_api_version: "2024-08-01-preview"
   retrieval: 
       search_type: "hybrid"
-      top_k: 3
+      top_k: 5
   model_parameters:
     temperature: 0.0
     seed: 42
