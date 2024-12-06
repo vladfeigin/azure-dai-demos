@@ -76,3 +76,5 @@ llmops/flow_configuration/__pycache__/flow_config.cpython-311.pyc
 llmops/rag/__pycache__/prompts.cpython-311.pyc
 llmops/aisearch/app.log
 llmops/__config__.__json__
+llmops/utils/__.env_not_in_use
+llmops/aisearch/test.ipynb

@@ -59,16 +59,15 @@ _embeddings = AzureOpenAIEmbeddings(
 # Define search index custom schema
 _fields = [
     SimpleField(
-        name="chunk_id",
+        name="id",
         type=SearchFieldDataType.String,
         key=True,
         filterable=True,
     ),
-    SimpleField(
-        name="parent_id",
+    SearchableField(
+        name="metadata",
         type=SearchFieldDataType.String,
-        key=True,
-        filterable=True,
+        searchable=True,
     ),
     SearchableField(
         name="chunk",
@@ -87,20 +86,21 @@ _fields = [
         type=SearchFieldDataType.String,
         searchable=True,
     ),
+      SimpleField(
+        name="source",
+        type=SearchFieldDataType.String,
+        filterable=True,
+    ),
 ]
 
 # AISearch class to perform search operations
 class AISearch:
 
     # init method to initialize the class
-    def __init__(self, search_type:str, top_k:int) -> None:
+    def __init__(self) -> None:
 
         logger.info("AISearch.Initializing Azure Search client.")
-        self._search_type = search_type
-        self._top_k = top_k
         
-        logger.info(f"Search type: {search_type}")
-        logger.info(f"Top K: {top_k}")
         logger.info(f"ai search index name : {AZURE_AI_SEARCH_INDEX_NAME}")
         
         try:
@@ -110,14 +110,11 @@ class AISearch:
                 azure_search_key=AZURE_AI_SEARCH_API_KEY,
                 index_name=AZURE_AI_SEARCH_INDEX_NAME,
                 embedding_function=_embeddings.embed_query,
-                #search_type=search_type,
                 semantic_configuration_name=INDEX_SEMANTIC_CONFIGURATION_NAME,
                 additional_search_client_options={"retry_total": 3, "logging_enable":True, "logger":logger},
                 fields=_fields,
             )
-            # Create retriever object
-            #supported search types: "semantic_hybrid", "similarity" (default) , "hybryd"
-            self._retriever = self._vector_search.as_retriever(search_type=search_type, k=top_k)    
+            
             atexit.register(self.__close__)
         except Exception as e:
             logger.error(f"Error during ai search index initialization: {e}")
@@ -129,10 +126,14 @@ class AISearch:
         """
         print("Closing Azure Search client.")
 
-    def retriever(self) -> AzureAISearchRetriever:
-        return self._retriever
+    #TODO - add as parameter the search type and the top_k here instead having them as fixed values 
+    def create_retriever(self, search_type:str, top_k=3) -> AzureAISearchRetriever:
+        # Create retriever object
+        #supported search types: "semantic_hybrid", "similarity" (default) , "hybryd"
+        return self._vector_search.as_retriever(search_type=search_type, k=top_k)    
+        
 
-    def ingest(self, documents: list, metadata: list) -> None:
+    def ingest(self, documents: list, **kwargs) -> None:
         """
         Ingest documents into Azure Search.
 
@@ -142,13 +143,8 @@ class AISearch:
         """
         if not isinstance(documents, list) or not documents:
             raise ValueError("Input must be a non-empty list")
-        if not isinstance(metadata, list) or not metadata:
-            raise ValueError("Metadata must be a non-empty list")
-        if len(documents) != len(metadata):
-            raise ValueError(
-                "Documents and metadata must be of the same length")
-
-        self._vector_search.add_documents(documents, metadata)
+        
+        self._vector_search.add_documents(documents)
 
     # TODO: Add thresholds and output score
     def search(self, query: str, search_type: str = 'hybrid', top_k: int = 5) -> str:
