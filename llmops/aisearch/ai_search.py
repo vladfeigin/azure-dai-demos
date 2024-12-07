@@ -19,16 +19,16 @@ load_dotenv()
 
 from logging import INFO, getLogger
 # Logging calls with this logger will be tracked
-logger = getLogger(__name__)
+logger = configure_logging()
 tracer = trace.get_tracer(__name__)
 
 # Azure Search configuration
 AZURE_AI_SEARCH_SERVICE_ENDPOINT = os.getenv(
     "AZURE_AI_SEARCH_SERVICE_ENDPOINT")
 AZURE_AI_SEARCH_API_KEY = os.getenv("AZURE_AI_SEARCH_API_KEY")
-AZURE_AI_SEARCH_INDEX_NAME = os.getenv("AZURE_AI_SEARCH_INDEX_NAME")
+#AZURE_AI_SEARCH_INDEX_NAME = os.getenv("AZURE_AI_SEARCH_INDEX_NAME")
 AZURE_AI_SEARCH_SERVICE_NAME = os.getenv("AZURE_AI_SEARCH_SERVICE_NAME")
-INDEX_SEMANTIC_CONFIGURATION_NAME = os.getenv("INDEX_SEMANTIC_CONFIGURATION_NAME")
+#INDEX_SEMANTIC_CONFIGURATION_NAME = os.getenv("INDEX_SEMANTIC_CONFIGURATION_NAME")
 
 # Azure OpenAI configuration
 AZURE_OPENAI_KEY = os.getenv("AZURE_OPENAI_KEY")
@@ -39,7 +39,7 @@ AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION")
 
 # Validate environment variables
 _required_env_vars = [
-    "AZURE_AI_SEARCH_SERVICE_ENDPOINT", "AZURE_AI_SEARCH_API_KEY", "AZURE_AI_SEARCH_INDEX_NAME",
+    "AZURE_AI_SEARCH_SERVICE_ENDPOINT", "AZURE_AI_SEARCH_API_KEY",
     "AZURE_OPENAI_KEY", "AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "AZURE_OPENAI_EMBEDDING_ENDPOINT", "AZURE_OPENAI_API_VERSION"
 ]
 
@@ -97,20 +97,22 @@ _fields = [
 class AISearch:
 
     # init method to initialize the class
-    def __init__(self) -> None:
+    def __init__(self, index_name:str, index_semantic_configuration_name:str) -> None:
 
         logger.info("AISearch.Initializing Azure Search client.")
         
-        logger.info(f"ai search index name : {AZURE_AI_SEARCH_INDEX_NAME}")
+        logger.info(f"ai search index name : {index_name}")
+        self.index_name = index_name
+        self.index_semantic_configuration_name = index_semantic_configuration_name
         
         try:
             # Create Langchain AzureSearch object
             self._vector_search = AzureSearch(
                 azure_search_endpoint=AZURE_AI_SEARCH_SERVICE_ENDPOINT,
                 azure_search_key=AZURE_AI_SEARCH_API_KEY,
-                index_name=AZURE_AI_SEARCH_INDEX_NAME,
+                index_name=index_name,
                 embedding_function=_embeddings.embed_query,
-                semantic_configuration_name=INDEX_SEMANTIC_CONFIGURATION_NAME,
+                semantic_configuration_name=index_semantic_configuration_name,
                 additional_search_client_options={"retry_total": 3, "logging_enable":True, "logger":logger},
                 fields=_fields,
             )

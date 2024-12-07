@@ -54,9 +54,8 @@ class RAG:
                 api_key=api_key
             )
             # init the AISearch class , enveloping the Azure Search retriever
-            #self.aisearch = AISearch(self.rag_config["AgentConfiguration"]["retrieval"]
-            #                         ["search_type"], self.rag_config["AgentConfiguration"]["retrieval"]["top_k"])
-            self.aisearch = AISearch()
+            self.aisearch = AISearch(self.rag_config["AgentConfiguration"]["retrieval"]["index_name"],
+                                    self.rag_config["AgentConfiguration"]["retrieval"]["index_semantic_configuration_name"])
         
             # initiate the session store
             self._session_store = SimpleInMemorySessionStore()

@@ -10,6 +10,8 @@ AgentConfiguration:
   retrieval: 
       search_type: "hybrid"
       top_k: 5
+      index_name: "micirosoft-tech-stack-index-0"
+      index_semantic_configuration_name: "vector-llmops-workshop-index-semantic-configuration"
   model_parameters:
     temperature: 0.0
     seed: 42
@@ -20,9 +22,9 @@ AgentConfiguration:
         For example, if the latest question is ‘What about its pricing?’ and the chat history discusses Microsoft Azure, reformulate it to ‘What is the pricing of Microsoft Azure?’
 
   chat_system_prompt: > 
-        You are a knowledgeable assistant specializing only in Microsoft technologies, including Azure, Microsoft Fabric, Microsoft 365, Dynamics 365, Power Platform. 
-        Your responses should be based exclusively on the context provided in the prompt; do not incorporate external knowledge. 
-        Address only questions related to Microsoft technologies. Deliver concise and clear answers, emphasizing the main points of the user’s query.
+        You are a knowledgeable assistant specializing only in technology domain. 
+        Deliver concise and clear answers, emphasizing the main points of the user’s query.
+        Your responses should be based exclusively on the context provided in the prompt; do not incorporate external knowledge.
         If the provided context is insufficient to answer the question, request additional information.
             
         <context>
