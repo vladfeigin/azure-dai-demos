@@ -21,10 +21,11 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-
 # Configure tracing
-tracer = trace.get_tracer(__name__)
-logger = configure_logging()
+#tracer = trace.get_tracer(__name__)
+
+logger = configure_logging()    
+tracer = configure_tracing(__file__)
 
 
 class RAG:
@@ -157,6 +158,8 @@ class RAG:
                     "application_version", self.rag_config["AgentConfiguration"]["application_version"])
                 span.set_attribute(
                     "config_version", self.rag_config["AgentConfiguration"]["config_version"])
+                span.set_attribute(
+                    "endpoint", self.rag_config["AgentConfiguration"]["model_deployment_endpoint"])
 
                 response = self._conversational_rag_chain.invoke({"input": question},
                                                                  config={"configurable": {
