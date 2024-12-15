@@ -1,99 +1,116 @@
-.create-or-alter function EvaluationFlowInsert() {
-     let AppTracesTbl = 
-        traces_table
-        | extend item = parse_json(records)
+     //--  open ai chat details
+
+      .create-or-alter function OngoingFlowInsert_chat() {   
+        let ongoing_expanded_table=
+        ongoing_raw_table
+        | extend item = (records)
         | mv-expand item
         | serialize
-        | extend RowNumber = row_number(1, prev(PartitionId) != PartitionId) 
-        | where item.Type == "AppTraces" 
-        | where todatetime(EventProcessedUtcTime) >= todatetime ("2024-11-29")
-        | project
+        | where todatetime(EventEnqueuedUtcTime)>= todatetime('2024-12-07')
+        | where item.Type == 'AppDependencies'
+        | project     
             EventProcessedUtcTime,
-            PartitionId,
-            RowNumber,
             item,
-            metricName = item.metricName,
             Target = item.Target,
-            Type = item.Type,
-            PropertiesPayload = dynamic_to_json(item.Properties.payload);
-     AppTracesTbl
-    | project
+            Type = item.Type;
+        ongoing_expanded_table
+        | project
         item_time = todatetime((item)["time"]),
-        toguid(item.OperationId),
-        tostring(item.ParentId),
-        Message = dynamic_to_json(item.Message)
-    | where Message has "batch-evaluation-flow-metrics"
-    | extend parsed_json = parse_json(Message)
-    | extend 
-        AgentName = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.agent_name),		
-        ConfigVersion = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.config_version),
-        ModelName = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.model_name),
-        ModelVersion = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.model_version),
-        ModelDeploymentName = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.model_deployment),
-        OpenAIAPIVersion = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.openai_api_version),
-        IntentSystemPrompt = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.intent_system_prompt),
-        ChatSystemPrompt = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.chat_system_prompt),
-        Deployment = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.model_deployment_endpoint),
-        Temperature = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.model_parameters.temperature),
-        Seed = tolong(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.model_parameters.seed),
-        SearchType = tostring(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.retrieval.search_type),
-        SearchTopK = tolong(parsed_json.metadata.tags.run_configuraton.AgentConfiguration.retrieval.top_k),
-        TotalTokens = tolong(parsed_json.metadata.properties.system_metrics.total_tokens),
-        PromptTokens = tolong(parsed_json.metadata.properties.system_metrics.prompt_tokens),
-        CompletionTokens = tolong(parsed_json.metadata.properties.system_metrics.completion_tokens),
-        Duration = tolong(parsed_json.metadata.properties.system_metrics.duration)       
-    | where isnotempty(AgentName)         
-    | mv-expand result = parsed_json.result
-    | extend metric = tostring(result.metric), score = toreal(result.score)
-    | project-away Message, parsed_json, result
-    | evaluate pivot(metric, any(score))
-    | sort by item_time asc
-    | extend PreviousIntentSystemPrompt = prev(IntentSystemPrompt)
-    | extend IsSameAsPreviousIntentSystemPrompt = iff(IntentSystemPrompt == PreviousIntentSystemPrompt or isempty(PreviousIntentSystemPrompt), "Yes", "No")
-    | extend PreviousChatSystemPrompt = prev(ChatSystemPrompt)
-    | extend IsSameAsPreviousChatSystemPrompt = iff(ChatSystemPrompt == PreviousChatSystemPrompt or isempty(PreviousChatSystemPrompt), "Yes", "No")
-    | project
-        EventTime = item_time,
-        item_OperationId,
-        item_ParentId,
-        AgentName,
-        ConfigVersion,
-        ModelName,
-        ModelVersion,
-        ModelDeploymentName,
-        OpenAIAPIVersion,
-        Deployment,
-        TotalTokens,
-        PromptTokens,
-        CompletionTokens,
-        Duration,
-        Temperature,
-        Seed,
-        SearchType,
-        SearchTopK,
-        IntentSystemPrompt,
-        ChatSystemPrompt,
-        Coherence = coherence,
-        Groundedness = groundedness,
-        Relevance = relevance,
-        Similarity = similarity,
-        IsSameAsPreviousIntentSystemPrompt,
-        IsSameAsPreviousChatSystemPrompt
- }
+        target = Target,
+        operation_id = toguid(item.OperationId),
+        item
+        | where target == "openai_chat" 
+        | extend parsed_item = parse_json(item)
+        | extend duration = toint(parsed_item.DurationMs)
+        | extend success = tostring(parsed_item.Success)
+        | extend prompt = parsed_item.Properties.inputs
+        | extend generated_message = parsed_item.Properties.["llm.generated_message"]
+        | extend total_tokens = toint(parsed_item.Properties.["llm.usage.total_tokens"])
+        | extend prompt_tokens = toint(parsed_item.Properties.["llm.usage.prompt_tokens"])
+        | extend completion_tokens = toint(parsed_item.Properties.["llm.usage.completion_tokens"])
+        | extend lm_model = tostring(parsed_item.Properties["llm.response.model"])
+        | project item_time, operation_id, duration, success, prompt, generated_message,total_tokens, prompt_tokens, completion_tokens,lm_model
+      }
 
-   .create table 
-    EvaluationFlow (EventTime: datetime, item_OperationId: guid, item_ParentId: string, AgentName: string, ConfigVersion: string, ModelName: string, ModelVersion: string, ModelDeploymentName: string, OpenAIAPIVersion: string,
-    Deployment: string, TotalTokens: long, PromptTokens: long, CompletionTokens: long, Duration: long, Temperature: string, Seed: long, SearchType: string, SearchTopK: long, IntentSystemPrompt: string, ChatSystemPrompt: string,
-    Coherence: real, Groundedness: real, Relevance: real, Similarity: real, IsSameAsPreviousIntentSystemPrompt: string, IsSameAsPreviousChatSystemPrompt: string
-    )
 
-//.drop table EvaluationFlow
+    .create table 
+    OngoingChatFlow (item_time: datetime, operation_id: guid, duration:int , success: string  , prompt:dynamic , generated_message:dynamic ,total_tokens:int, prompt_tokens:int, completion_tokens:int, lm_model:string)
 
-.alter table EvaluationFlow policy update
-    @'[{ "IsEnabled": true, "Source": "traces_table", "Query": "EvaluationFlowInsert()", "IsTransactional": true}]'
 
-.set-or-append EvaluationFlow <|
-    EvaluationFlowInsert()
+.alter table OngoingChatFlow policy update
+    @'[{ "IsEnabled": true, "Source": "ongoing_raw_table", "Query": "OngoingFlowInsert_chat()", "IsTransactional": true}]'
+
+.set-or-append OngoingChatFlow <|
+    OngoingFlowInsert_chat()
+
+
+//-  --- application details 
+
+      .create-or-alter function OngoingFlowInsert_appl() {   
+        let ongoing_appl_expanded_table=
+        ongoing_raw_table
+        | extend item = (records)
+        | mv-expand item
+        | serialize
+        | where todatetime(EventEnqueuedUtcTime)>= todatetime('2024-12-07')
+        | where item.Type == 'AppDependencies'
+        | project     
+            EventProcessedUtcTime,
+            item,
+            Target = item.Target,
+            Type = item.Type;
+        ongoing_appl_expanded_table
+        | project
+        item_time = todatetime(item["time"]),
+        target = Target,
+        operation_id = toguid(item.OperationId),
+        item
+        | where target == "RAG.__chat__" 
+        | extend parsed_item = parse_json(item)
+        | extend application_name = tostring(parsed_item.Properties.application_name)
+        | extend application_version = tostring(parsed_item.Properties.application_version)
+        | extend session_id = tostring(parsed_item.Properties.session_id)
+        | extend config_version = tostring(parsed_item.Properties.config_version)
+        | extend deployment = tostring(parsed_item.Properties.endpoint)
+        | project item_time, operation_id, application_name, application_version, session_id, config_version,deployment
+      }
+
+
+    .create table 
+    OngoingApplicationFlow (item_time: datetime, operation_id: guid, application_name:string , application_version:string ,session_id:string , config_version:string, deployment:string ) 
+
+.alter table OngoingApplicationFlow policy update
+    @'[{ "IsEnabled": true, "Source": "ongoing_raw_table", "Query": "OngoingFlowInsert_appl()", "IsTransactional": true}]'
+
+.set-or-append OngoingApplicationFlow <|
+    OngoingFlowInsert_appl()   
+
+
+// create a join table
+
+#.drop table OngoingChatApplicationFlow
+
+.set-or-replace OngoingChatApplicationFlow <|
+OngoingApplicationFlow
+| join OngoingChatFlow on operation_id
+|project 
+    item_time,
+    operation_id,
+    application_name,
+    application_version,
+    session_id,
+    config_version,
+    duration,
+    success,
+    prompt,
+    generated_message,
+    total_tokens,
+    prompt_tokens,
+    completion_tokens,
+    lm_model, 
+    deployment
+
+
 
 
 

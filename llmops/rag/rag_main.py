@@ -5,7 +5,7 @@
 
 
 # initialize all environment variables from .env file
-from opentelemetry import trace
+#from opentelemetry import trace
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_community.chat_message_histories import ChatMessageHistory
@@ -21,10 +21,8 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-# Configure tracing
-#tracer = trace.get_tracer(__name__)
-
-logger = configure_logging()    
+# Configure tracing and logging
+logger = configure_logging()
 tracer = configure_tracing(__file__)
 
 
@@ -54,9 +52,11 @@ class RAG:
                 api_key=api_key
             )
             # init the AISearch class , enveloping the Azure Search retriever
-            self.aisearch = AISearch(self.rag_config["AgentConfiguration"]["retrieval"]["index_name"],
-                                    self.rag_config["AgentConfiguration"]["retrieval"]["index_semantic_configuration_name"])
-        
+            self.aisearch = AISearch(self.rag_config["AgentConfiguration"]["retrieval"]["embedding_deployment"],
+                                     self.rag_config["AgentConfiguration"]["retrieval"]["embedding_endpoint"],
+                                     self.rag_config["AgentConfiguration"]["retrieval"]["index_name"],
+                                     self.rag_config["AgentConfiguration"]["retrieval"]["index_semantic_configuration_name"])
+
             # initiate the session store
             self._session_store = SimpleInMemorySessionStore()
 
@@ -81,10 +81,10 @@ class RAG:
             self._history_aware_user_intent_retriever = \
                 create_history_aware_retriever(self.aimodel.llm(),
                                                self.aisearch.create_retriever(
-                                                    self.rag_config["AgentConfiguration"]["retrieval"]["search_type"],
-                                                    self.rag_config["AgentConfiguration"]["retrieval"]["top_k"]), 
-                                               self._user_intent_prompt_template
-                                               )
+                    self.rag_config["AgentConfiguration"]["retrieval"]["search_type"],
+                    self.rag_config["AgentConfiguration"]["retrieval"]["top_k"]),
+                    self._user_intent_prompt_template
+                )
 
             # prepare final chat chain with history aware retriever
             self._chat_prompt_template = ChatPromptTemplate.from_messages(
