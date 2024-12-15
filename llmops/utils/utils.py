@@ -47,32 +47,32 @@ def load_agent_configuration(agent_folder: str, agent_config_file: str) -> dict:
 def configure_aoai_env():
     # check if all the required environment variables are set than skip the rest of the code:
 
-    if all([os.environ.get("AZURE_OPENAI_ENDPOINT"),
-            os.environ.get("AZURE_OPENAI_DEPLOYMENT"),
+    if all([#os.environ.get("AZURE_OPENAI_ENDPOINT"),
+            #os.environ.get("AZURE_OPENAI_DEPLOYMENT"),
             os.environ.get("AZURE_OPENAI_API_VERSION"),
             os.environ.get("AZURE_OPENAI_KEY")]):
         return {
-            "azure_endpoint": os.environ.get("AZURE_OPENAI_ENDPOINT"),
+            #"azure_endpoint": os.environ.get("AZURE_OPENAI_ENDPOINT"),
             "api_key": os.environ.get("AZURE_OPENAI_KEY"),
-            "azure_deployment": os.environ.get("AZURE_OPENAI_DEPLOYMENT"),
+            #"azure_deployment": os.environ.get("AZURE_OPENAI_DEPLOYMENT"),
             "api_version": os.environ.get("AZURE_OPENAI_API_VERSION"),
         }
 
     # Retrieve environment variables with default values or handle missing cases
-    azure_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
-    azure_deployment = os.environ.get("AZURE_OPENAI_DEPLOYMENT")
+    #azure_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
+    #azure_deployment = os.environ.get("AZURE_OPENAI_DEPLOYMENT")
     api_version = os.environ.get("AZURE_OPENAI_API_VERSION")
     api_key = os.environ.get("AZURE_OPENAI_KEY")
 
-    if not all([azure_endpoint, azure_deployment, api_version, api_key]):
+    if not all([ api_version, api_key]):
         logging.error(
             "One or more Azure OpenAI environment variables are missing.")
         raise Exception("One or more environment variables are missing.")
 
     model_config = {
-        "azure_endpoint": azure_endpoint,
+        #"azure_endpoint": azure_endpoint,
         "api_key": api_key,
-        "azure_deployment": azure_deployment,
+        #"azure_deployment": azure_deployment,
         "api_version": api_version,
     }
     return model_config
