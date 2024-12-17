@@ -1,15 +1,16 @@
 # yaml-language-server: $schema=../schemas/rag_agent_config_schema.yaml
 AgentConfiguration:
+  description: "RAG Agent configuration"
   config_version: 1.0
   agent_name: "rag_agent"
   model_name: "gpt-35-turbo"
   model_version: "2024-08-01"
 
-  #model_deployment: "gpt-4o-3"
-  #model_deployment_endpoint: "https://openai-australia-east-303474.openai.azure.com/openai/deployments/gpt-4o-3/chat/completions?api-version=2024-08-01-preview"
+  model_deployment: "gpt-4o-3"
+  model_deployment_endpoint: "https://openai-australia-east-303474.openai.azure.com/openai/deployments/gpt-4o-3/chat/completions?api-version=2024-08-01-preview"
   
-  model_deployment: "gpt-35-turbo"
-  model_deployment_endpoint: "https://openai-australia-east-303474.openai.azure.com/openai/deployments/gpt-35-turbo/chat/completions?api-version=2024-08-01-preview"
+  #model_deployment: "gpt-35-turbo"
+  #model_deployment_endpoint: "https://openai-australia-east-303474.openai.azure.com/openai/deployments/gpt-35-turbo/chat/completions?api-version=2024-08-01-preview"
 
   #model_deployment: "gpt-4o-mini"
   #model_deployment_endpoint: "https://openai-australia-east-303474.openai.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-08-01-preview"
@@ -21,6 +22,7 @@ AgentConfiguration:
       embedding_endpoint: "https://openai-australia-east-303474.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2023-05-15"
       embedding_deployment: "text-embedding-ada-002"
       index_name: "micirosoft-tech-stack-index-0"
+      #index_name: "xx-index11"
       index_semantic_configuration_name: "vector-llmops-workshop-index-semantic-configuration"
   model_parameters:
     temperature: 0.0
